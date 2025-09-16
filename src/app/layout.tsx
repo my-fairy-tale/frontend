@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
+import AuthProvider from '@/components/auth-provider';
 
 export const metadata: Metadata = {
   title: 'my fairy tale',
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );
