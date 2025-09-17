@@ -14,16 +14,21 @@
     "react-dom": "19.1.0"
   },
   "devDependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.15.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "bcrypt": "^6.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
+    "iron-session": "^8.0.4",
     "next-auth": "^4.24.11",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "zustand": "^5.0.8"
   },
   "packageManager": "yarn@4.9.3+sha512.8295ee814f6b253e16f516416481b481a215ed03ef1ae38524d108084872560a9ed75aeb23b91ab64222062ac4149a594150ae538c2a9536fdbcefd4e49b11cc"
 }
