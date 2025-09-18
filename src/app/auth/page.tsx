@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '@/store/useAuthStore';
+import apiFetch from '@/lib/api';
+import { AuthResponse } from '@/types/api';
 
 export default function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -21,27 +23,26 @@ export default function AuthPage() {
     setLoading(true);
     setError('');
 
-    const result = await fetch('/api/auth/sign-in', {
+    const result = await apiFetch<AuthResponse>('/api/v1/auth/sign-in', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ email, password }),
     });
 
-    setLoading(false);
-
-    if (result?.ok) {
-      const data = await result.json();
-      if (data) {
-        setAccessToken(data.data.accessToken);
+    if (result) {
+      // 로그인 성공
+      if (result.code === 'AUTH_2002') {
+        setAccessToken(result.data!.accessToken);
+        router.push('/');
+        // 아이디 비번 불일치
+      } else if (result.code === 'AUTH_4002') {
+        setError('아이디 또는 비밀번호가 일치하지 않습니다.');
       } else {
-        setError('오류가 발생했습니다. 다시 시도해주세요.');
+        setError(result.message || '오류가 발생했습니다. 다시 시도해주세요.');
       }
-      router.push('/');
     } else {
-      setError('아이디 또는 비밀번호가 일치하지 않습니다.');
+      setError('오류가 발생했습니다. 다시 시도해주세요.');
     }
+    setLoading(false);
   };
 
   // 회원가입 처리 함수
@@ -50,32 +51,26 @@ export default function AuthPage() {
     setLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('/api/auth/sign-up', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password, name }),
-      });
+    const result = await apiFetch<AuthResponse>('/api/v1/auth/sign-up', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data) {
-          setAccessToken(data.data.accessToken);
-        } else {
-          setError('오류가 발생했습니다. 다시 시도해주세요.');
-        }
+    if (result) {
+      // 회원가입 성공
+      if (result.code === 'AUTH_2001') {
+        setAccessToken(result.data!.accessToken);
         router.push('/');
+        // 아이디 비번 불일치
+      } else if (result.code === 'AUTH_4001') {
+        setError('이미 존재하는 이메일입니다');
       } else {
-        const data = await response.json();
-        setError(data.message || '회원가입에 실패했습니다.');
+        setError(result.message || '오류가 발생했습니다. 다시 시도해주세요.');
       }
-    } catch (err) {
+    } else {
       setError('오류가 발생했습니다. 다시 시도해주세요.');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (
