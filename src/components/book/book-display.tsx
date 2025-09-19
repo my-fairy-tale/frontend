@@ -1,20 +1,8 @@
 'use client';
 
+import { BookData } from '@/types/api';
 import Image from 'next/image';
 import { useRef, useState } from 'react';
-
-interface BookPage {
-  pageNumber: number;
-  text: string;
-  imageUrl: string;
-  ttsUrl: string;
-}
-
-interface BookData {
-  id: string;
-  title: string;
-  pages: BookPage[];
-}
 
 const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
@@ -62,7 +50,7 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
         <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-2xl border border-gray-200">
           {/* 왼쪽 페이지 */}
           <div
-            onClick={() => leftPage && playTts(leftPage.ttsUrl)}
+            // onClick={() => leftPage && playTts(leftPage.ttsUrl)}
             className="aspect-[3/4] border border-gray-200 rounded-lg p-4 sm:p-6 flex flex-col items-center justify-between bg-white shadow-inner cursor-pointer relative"
           >
             <Image
@@ -71,7 +59,7 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
               className="max-w-full max-h-[70%] object-contain rounded-md"
             />
             <p className="text-base sm:text-lg text-center text-gray-700 leading-relaxed flex-grow flex items-center justify-center pt-4">
-              {leftPage.text}
+              {leftPage.content}
             </p>
             <span className="absolute bottom-4 left-6 text-sm text-gray-400">
               {leftPage.pageNumber}
@@ -80,7 +68,7 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
 
           {/* 오른쪽 페이지 */}
           <div
-            onClick={() => rightPage && playTts(rightPage.ttsUrl)}
+            // onClick={() => rightPage && playTts(rightPage.ttsUrl)}
             className="aspect-[3/4] border border-gray-200 rounded-lg p-4 sm:p-6 flex flex-col items-center justify-between bg-white shadow-inner cursor-pointer relative"
           >
             {rightPage ? (
@@ -91,7 +79,7 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
                   className="max-w-full max-h-[70%] object-contain rounded-md"
                 />
                 <p className="text-base sm:text-lg text-center text-gray-700 leading-relaxed flex-grow flex items-center justify-center pt-4">
-                  {rightPage.text}
+                  {rightPage.content}
                 </p>
                 <span className="absolute bottom-4 right-6 text-sm text-gray-400">
                   {rightPage.pageNumber}

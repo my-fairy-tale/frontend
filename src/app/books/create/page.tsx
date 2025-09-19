@@ -2,29 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useAuthStore from '@/store/useAuthStore';
-
-interface CreateBookPageProps {
-  originalText: string;
-  targetAge: number;
-  theme: string;
-  style: string;
-}
+import { ApiResponse, CreateBookData, CreateBookPageProps } from '@/types/api';
+import apiFetch from '@/lib/api';
 
 const CreateBookPage = () => {
   const [story, setStory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { accessToken } = useAuthStore();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
 
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    };
     const body: CreateBookPageProps = {
       originalText: story,
       targetAge: 5,
@@ -32,27 +21,27 @@ const CreateBookPage = () => {
       style: 'CARTOON',
     };
 
-    const response = await fetch('/api/v1/books/generate', {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      alert('동화책 생성에 실패했어요. 다시 시도해 주세요.');
+    const response = await apiFetch<ApiResponse<CreateBookData>>(
+      '/api/v1/books/generate',
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (response) {
       setIsLoading(false);
-      return;
-    } else {
-      // 동화책 생성 요청 성공
-      console.log('동화책 생성 요청 성공');
+
+      // 동화책 생성 성공
+      if (response.code === 'BOOK_2001') {
+        alert(response.message || '나만의 동화책이 만들어지고 있어요');
+        router.push('/mypage');
+      } else {
+        alert(
+          response.message || '동화책 생성에 실패했어요. 다시 시도해 주세요.'
+        );
+      }
     }
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const data = await response.json();
-    const newBookId = data;
-    setIsLoading(false);
-    alert('나만의 동화책이 짠! 하고 만들어졌어요!');
-    router.push(`/books/${newBookId}`);
   };
 
   return (

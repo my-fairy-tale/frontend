@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '@/store/useAuthStore';
 import apiFetch from '@/lib/api';
-import { AuthResponse } from '@/types/api';
+import { ApiResponse, AuthData } from '@/types/api';
 
 export default function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -23,10 +23,13 @@ export default function AuthPage() {
     setLoading(true);
     setError('');
 
-    const result = await apiFetch<AuthResponse>('/api/v1/auth/sign-in', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    const result = await apiFetch<ApiResponse<AuthData>>(
+      '/api/v1/auth/sign-in',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }
+    );
 
     if (result) {
       // 로그인 성공
@@ -51,10 +54,13 @@ export default function AuthPage() {
     setLoading(true);
     setError('');
 
-    const result = await apiFetch<AuthResponse>('/api/v1/auth/sign-up', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, name }),
-    });
+    const result = await apiFetch<ApiResponse<AuthData>>(
+      '/api/v1/auth/sign-up',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password, name }),
+      }
+    );
 
     if (result) {
       // 회원가입 성공
