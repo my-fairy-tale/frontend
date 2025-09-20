@@ -1,12 +1,71 @@
 'use client';
 
 import { BookData } from '@/types/api';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BookPage from '@/components/book/book-page';
+
+// 2. 전체화면 아이콘 SVG 추가
+const FullscreenEnterIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+  </svg>
+);
+const FullscreenExitIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+  </svg>
+);
 
 const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  // --- 👇 전체화면 기능을 위한 코드 추가 ---
+  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const toggleFullscreen = () => {
+    const elem = fullscreenContainerRef.current;
+    if (!elem) return;
+
+    if (!document.fullscreenElement) {
+      elem.requestFullscreen().catch((err) => {
+        alert(
+          `전체 화면 모드를 시작할 수 없습니다: ${err.message} (${err.name})`
+        );
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () =>
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   if (bookData.pages.length === 0) {
     return <div>이 책에는 페이지가 없습니다.</div>;
@@ -49,7 +108,10 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   };
 
   return (
-    <>
+    <div
+      ref={fullscreenContainerRef}
+      className="w-full h-full relative flex flex-col items-center justify-center bg-gray-100 p-4"
+    >
       <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-8 text-center">
         {bookData.title}
       </h1>
@@ -87,13 +149,19 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
           &gt;
         </button>
       </div>
+      <button
+        onClick={toggleFullscreen}
+        className="absolute bottom-0 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
+      >
+        {isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />}
+      </button>
 
       <audio
         ref={audioRef}
         controls
         className="hidden"
       />
-    </>
+    </div>
   );
 };
 

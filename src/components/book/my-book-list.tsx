@@ -44,6 +44,7 @@ const MyBookList = () => {
               id={book.id}
               thumbnailUrl={book.thumbnailUrl}
               title={book.title}
+              isPublic={book.visibility}
             />
           ))}
         </div>

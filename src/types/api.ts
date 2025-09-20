@@ -58,6 +58,7 @@ export interface BookData {
   style: BookStyle;
   status: BookStatus;
   progress: number;
+  visibility: 'PRIVATE' | 'PUBLIC';
   currentStep: string;
   createdAt: string;
   updatedAt: string;
@@ -74,6 +75,7 @@ export interface BookSummary {
   style: BookStyle;
   status: BookStatus;
   progress: number;
+  visibility: 'PRIVATE' | 'PUBLIC';
   createdAt: string;
   completedAt: string | null;
   thumbnailUrl: string;
