@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 // params 객체의 타입을 미리 정의해두면 편리합니다.
 interface Params {
-  params: { bookId: string };
+  params: Promise<{ bookId: string }>;
 }
 
 /**
@@ -10,7 +10,8 @@ interface Params {
  * @param request - Next.js의 Request 객체
  * @param params - URL의 동적 세그먼트 값을 담고 있는 객체
  */
-export async function GET(request: Request, { params }: Params) {
+export async function GET(request: Request, props: Params) {
+  const params = await props.params;
   const { bookId } = params;
   const api_url = `http://218.51.41.52:9600/api/v1/books/${bookId}`;
 
@@ -34,7 +35,8 @@ export async function GET(request: Request, { params }: Params) {
 /**
  * 특정 책을 삭제하는 API (DELETE)
  */
-export async function DELETE(request: Request, { params }: Params) {
+export async function DELETE(request: Request, props: Params) {
+  const params = await props.params;
   const { bookId } = params;
 
   // 여기서 DB에서 bookId에 해당하는 책 정보를 삭제합니다.

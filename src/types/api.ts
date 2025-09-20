@@ -8,12 +8,13 @@ export interface ApiResponse<T> {
 }
 export interface AuthData {
   accessToken: string;
-  refreshToken: string;
+  //refreshToken: string;
   accessTokenExpiresIn: number;
   refreshTokenExpiresIn: number;
 }
 
 export interface CreateBookPageProps {
+  title: string;
   originalText: string;
   targetAge: number;
   theme: string;
@@ -36,6 +37,7 @@ export interface BookPage {
   imagePath: string;
   imageUrl: string;
   imagePrompt: string;
+  audioUrl: string;
 }
 
 export interface AudioFile {
