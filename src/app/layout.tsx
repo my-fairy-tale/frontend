@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import './globals.css';
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
+import ReactQueryProvider from '@/components/provider/react-query-provider';
 
 export const metadata: Metadata = {
   title: 'my fairy tale',
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <ReactQueryProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </ReactQueryProvider>
       </body>
     </html>
   );

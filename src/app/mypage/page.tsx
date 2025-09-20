@@ -2,71 +2,11 @@
 
 import apiFetch from '@/lib/api';
 import useAuthStore from '@/store/useAuthStore';
-import { ApiResponse, BookSummary, MyBooksData } from '@/types/api';
+import { ApiResponse } from '@/types/api';
 import { useState, useEffect } from 'react';
+import MyBookList from '@/components/book/my-book-list';
+import { FaUserCircle } from 'react-icons/fa';
 
-function MyBookList() {
-  const [books, setBooks] = useState<BookSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchMyBooks = async () => {
-      try {
-        // 내가 만든 책 목록을 요청하는 API
-        const myBooksData = await apiFetch<ApiResponse<MyBooksData>>(
-          '/api/v1/books/my?status=COMPLETED&page=0&size=5',
-          {
-            method: 'GET',
-          }
-        );
-        if (myBooksData) {
-          setBooks(myBooksData.data?.books || []);
-        }
-      } catch (error) {
-        console.error('내가 만든 책 목록을 가져오는데 실패했습니다.', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchMyBooks();
-  }, []);
-
-  return (
-    <section>
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">내가 만든 책</h2>
-      {isLoading ? (
-        <p>책 목록을 불러오는 중...</p>
-      ) : books.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {books.map((book) => (
-            <div
-              key={book.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
-            >
-              <img
-                src={book.thumbnailUrl || 'https://via.placeholder.com/150x200'}
-                alt={book.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="font-bold text-gray-800 truncate">
-                  {book.title}
-                </h3>
-                {/* <p className="text-sm text-gray-600">{book.author}</p> */}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-10 px-6 bg-gray-50 rounded-lg">
-          <p className="text-gray-600">아직 만든 책이 없습니다.</p>
-        </div>
-      )}
-    </section>
-  );
-}
-
-// 사용자 정보 타입 정의
 interface UserProfileData {
   name: string;
   email: string;
@@ -107,11 +47,7 @@ function UserProfile() {
     <section>
       <h2 className="text-xl font-semibold mb-4 text-gray-800">내 정보</h2>
       <div className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-6">
-        <img
-          src={user?.profileImageUrl || 'https://via.placeholder.com/80'}
-          alt="Profile"
-          className="w-20 h-20 rounded-full object-cover"
-        />
+        <FaUserCircle size={80} />
         <div>
           <p className="text-2xl font-bold text-gray-900">{user?.name}</p>
           <p className="text-md text-gray-600">{user?.email}</p>

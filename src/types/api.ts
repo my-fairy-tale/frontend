@@ -54,9 +54,9 @@ export interface BookData {
   title: string;
   originalText: string;
   targetAge: number;
-  theme: string;
-  style: string;
-  status: string;
+  theme: BookTheme;
+  style: BookStyle;
+  status: BookStatus;
   progress: number;
   currentStep: string;
   createdAt: string;
@@ -69,10 +69,10 @@ export interface BookData {
 export interface BookSummary {
   id: string;
   title: string;
-  status: string;
   targetAge: number;
-  theme: string;
-  style: string;
+  theme: BookTheme;
+  style: BookStyle;
+  status: BookStatus;
   progress: number;
   createdAt: string;
   completedAt: string | null;
@@ -99,3 +99,38 @@ export interface UserProfileData {
   status: string;
   createdAt: string;
 }
+
+export enum BookStatus {
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+export enum BookTheme {
+  ADVENTURE = 'ADVENTURE',
+  FRIENDSHIP = 'FRIENDSHIP',
+  LEARNING = 'LEARNING',
+  FANTASY = 'FANTASY',
+}
+
+export enum BookStyle {
+  CARTOON = 'CARTOON',
+  REALISTIC = 'REALISTIC',
+  WATERCOLOR = 'WATERCOLOR',
+  SKETCH = 'SKETCH',
+}
+
+// 한국어 라벨 매핑
+export const BookThemeLabels = {
+  [BookTheme.ADVENTURE]: '모험',
+  [BookTheme.FRIENDSHIP]: '우정',
+  [BookTheme.LEARNING]: '학습',
+  [BookTheme.FANTASY]: '판타지',
+};
+
+export const BookStyleLabels = {
+  [BookStyle.CARTOON]: '만화체',
+  [BookStyle.REALISTIC]: '사실적',
+  [BookStyle.WATERCOLOR]: '수채화',
+  [BookStyle.SKETCH]: '스케치',
+};

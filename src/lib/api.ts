@@ -7,7 +7,6 @@ async function apiFetch<T>(
   options: RequestInit = {}
 ): Promise<T | null> {
   const { accessToken, setAccessToken } = useAuthStore.getState();
-  console.log('api fetch호출 했고, 토큰은', accessToken);
 
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
@@ -33,8 +32,8 @@ async function apiFetch<T>(
     const response = await fetch(url, mergedOptions);
 
     if (!response.ok) {
-      // 401 unauthorized error -> token issue
-      if (response.status === 401) {
+      // 403 forbidden error or 401 unauthorized error -> token issue
+      if (response.status === 403 || response.status === 401) {
         console.log('Access token expired. Attempting to refresh...');
 
         // 2. 서버에 새로운 Access Token을 요청합니다.
