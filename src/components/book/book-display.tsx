@@ -1,12 +1,16 @@
 'use client';
 
 import { BookData } from '@/types/api';
-import Image from 'next/image';
 import { useRef, useState } from 'react';
+import BookPage from '@/components/book/book-page';
 
 const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  if (bookData.pages.length === 0) {
+    return <div>이 책에는 페이지가 없습니다.</div>;
+  }
 
   const leftPage = bookData.pages[currentPageIndex];
   const rightPage =
@@ -18,15 +22,29 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
     setCurrentPageIndex((prev) => Math.max(0, prev - 2));
   const goToNextPage = () =>
     setCurrentPageIndex((prev) =>
-      Math.min(bookData.pages.length - 1, prev + 2)
+      Math.min(bookData.pages.length - 2, prev + 2)
     );
 
-  const playTts = (ttsUrl: string) => {
+  const playTts = (audioUrl: string) => {
     if (audioRef.current) {
-      audioRef.current.src = ttsUrl;
-      audioRef.current
+      const audioPlayer = audioRef.current;
+
+      // 1. 만약 다른 오디오가 이미 재생 중이라면,
+      if (!audioPlayer.paused && audioPlayer.src !== audioUrl) {
+        // 현재 오디오를 멈추고 재생 시간을 처음으로 돌립니다.
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+      }
+
+      // 2. 새로운 오디오 URL을 설정합니다.
+      audioPlayer.src = audioUrl;
+
+      // 3. 오디오를 재생합니다.
+      // play() 메소드는 Promise를 반환하므로, catch로 에러를 처리해주는 것이 좋습니다.
+      // (예: 사용자가 상호작용하기 전에 자동재생을 시도할 때 발생하는 에러 등)
+      audioPlayer
         .play()
-        .catch((e) => console.error('오디오 재생 실패:', e));
+        .catch((error) => console.error('오디오 재생에 실패했습니다:', error));
     }
   };
 
@@ -41,63 +59,30 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
         <button
           onClick={goToPreviousPage}
           disabled={currentPageIndex === 0}
-          className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
         >
           &lt;
         </button>
 
-        {/* 책 페이지 영역 */}
-        <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-2xl border border-gray-200">
-          {/* 왼쪽 페이지 */}
-          <div
-            // onClick={() => leftPage && playTts(leftPage.ttsUrl)}
-            className="aspect-[3/4] border border-gray-200 rounded-lg p-4 sm:p-6 flex flex-col items-center justify-between bg-white shadow-inner cursor-pointer relative"
-          >
-            <Image
-              src={leftPage.imageUrl}
-              alt={`Page ${leftPage.pageNumber}`}
-              className="max-w-full max-h-[70%] object-contain rounded-md"
-            />
-            <p className="text-base sm:text-lg text-center text-gray-700 leading-relaxed flex-grow flex items-center justify-center pt-4">
-              {leftPage.content}
-            </p>
-            <span className="absolute bottom-4 left-6 text-sm text-gray-400">
-              {leftPage.pageNumber}
-            </span>
-          </div>
-
-          {/* 오른쪽 페이지 */}
-          <div
-            // onClick={() => rightPage && playTts(rightPage.ttsUrl)}
-            className="aspect-[3/4] border border-gray-200 rounded-lg p-4 sm:p-6 flex flex-col items-center justify-between bg-white shadow-inner cursor-pointer relative"
-          >
-            {rightPage ? (
-              <>
-                <Image
-                  src={rightPage.imageUrl}
-                  alt={`Page ${rightPage.pageNumber}`}
-                  className="max-w-full max-h-[70%] object-contain rounded-md"
-                />
-                <p className="text-base sm:text-lg text-center text-gray-700 leading-relaxed flex-grow flex items-center justify-center pt-4">
-                  {rightPage.content}
-                </p>
-                <span className="absolute bottom-4 right-6 text-sm text-gray-400">
-                  {rightPage.pageNumber}
-                </span>
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <p>동화책의 마지막입니다. 😊</p>
-              </div>
-            )}
-          </div>
+        {/* 책 페이지 영역 - 2. 크기 고정 및 레이아웃 안정화 */}
+        <div className="flex-grow h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-2xl border border-gray-200">
+          <BookPage
+            pageData={leftPage}
+            position="left"
+            onPlayAudio={playTts}
+          />
+          <BookPage
+            pageData={rightPage}
+            position="right"
+            onPlayAudio={playTts}
+          />
         </div>
 
         {/* 다음 페이지 버튼 */}
         <button
           onClick={goToNextPage}
-          disabled={!rightPage}
-          className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!rightPage || !bookData.pages[currentPageIndex + 2]} // 다음 펼칠 페이지가 있는지 확인
+          className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
         >
           &gt;
         </button>
