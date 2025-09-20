@@ -9,9 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.89.0",
+    "@tanstack/react-query-devtools": "^5.89.0",
+    "bcrypt": "^6.0.0",
+    "iron-session": "^8.0.4",
     "next": "15.5.3",
+    "next-auth": "^4.24.11",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-icons": "^5.5.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@elevenlabs/elevenlabs-js": "^2.15.0",
@@ -21,14 +28,10 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "bcrypt": "^6.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
-    "iron-session": "^8.0.4",
-    "next-auth": "^4.24.11",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "zustand": "^5.0.8"
+    "typescript": "^5"
   },
   "packageManager": "yarn@4.9.3+sha512.8295ee814f6b253e16f516416481b481a215ed03ef1ae38524d108084872560a9ed75aeb23b91ab64222062ac4149a594150ae538c2a9536fdbcefd4e49b11cc"
 }
