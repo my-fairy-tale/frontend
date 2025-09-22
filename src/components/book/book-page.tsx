@@ -1,4 +1,5 @@
 import { BookPage as BookPageData } from '@/types/api';
+import Image from 'next/image';
 
 interface BookPageProps {
   pageData: BookPageData | null;
@@ -34,9 +35,11 @@ export default function BookPage({
     >
       {/* 이미지 영역 */}
       <div className="flex-grow-[3] flex items-center justify-center mb-4">
-        <img
+        <Image
           src={pageData.imageUrl}
           alt={`Page ${pageData.pageNumber}`}
+          width={1024}
+          height={1024}
           className="max-w-full max-h-full object-contain rounded-md"
         />
       </div>

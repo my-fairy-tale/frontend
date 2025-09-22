@@ -42,6 +42,23 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   const fullscreenContainerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  useEffect(() => {
+    // 현재 페이지 이후의 이미지들을 미리 로드합니다.
+    const preloadNextImages = (startIndex: number) => {
+      // 예를 들어, 다음 2개 페이지의 이미지를 미리 로드
+      const pagesToPreload = bookData.pages.slice(startIndex, startIndex + 2);
+      pagesToPreload.forEach((page) => {
+        if (page.imageUrl) {
+          const img = new Image();
+          img.src = page.imageUrl;
+        }
+      });
+    };
+
+    // 현재 페이지 인덱스가 변경될 때마다 다음 이미지들을 미리 불러옵니다.
+    preloadNextImages(currentPageIndex + 2);
+  }, [currentPageIndex, bookData.pages]);
+
   const toggleFullscreen = () => {
     const elem = fullscreenContainerRef.current;
     if (!elem) return;
