@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   // 1. 요청에 담겨온 쿠키를 읽기 위해 cookieStore를 가져옵니다.
-  const cookieStore = await cookies();
+  const cookieStore = request.cookies;
   const refreshToken = cookieStore.get('refreshToken')?.value;
+  console.log('reissue called, refresh is', refreshToken);
 
   // 2. 쿠키에 refreshToken이 없는 경우 에러를 반환합니다.
   if (!refreshToken) {

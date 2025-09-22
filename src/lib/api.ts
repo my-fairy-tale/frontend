@@ -24,12 +24,8 @@ async function apiFetch<T>(
     },
   };
 
-  // 백엔드 API의 기본 URL을 환경 변수에서 가져옵니다.
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://218.51.41.52:9600';
-  const url = `${baseUrl}${path}`;
-
   try {
-    const response = await fetch(url, mergedOptions);
+    const response = await fetch(path, mergedOptions);
 
     if (!response.ok) {
       // 403 forbidden error or 401 unauthorized error -> token issue
@@ -40,11 +36,11 @@ async function apiFetch<T>(
         const refreshResponse = await fetch('/api/v1/auth/reissue', {
           method: 'POST',
         });
-        const refreshData = await refreshResponse.json();
+        const accessToken = await refreshResponse.json();
 
         // 3. 재발급에 성공했을 경우
-        if (refreshResponse.ok && refreshData.data.accessToken) {
-          const newAccessToken = refreshData.data.accessToken;
+        if (refreshResponse.ok && accessToken) {
+          const newAccessToken = accessToken;
           console.log('Successfully refreshed token.');
 
           // 3-1. Zustand 스토어의 토큰을 업데이트합니다.
@@ -57,7 +53,7 @@ async function apiFetch<T>(
           };
           const retryOptions = { ...mergedOptions, headers: newHeaders };
 
-          const retryResponse = await fetch(url, retryOptions);
+          const retryResponse = await fetch(path, retryOptions);
 
           if (!retryResponse.ok) {
             // 재시도에도 실패하면 에러를 던집니다.

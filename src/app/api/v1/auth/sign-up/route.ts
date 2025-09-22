@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         path: '/',
         maxAge: backendData.data.refreshTokenExpiresIn,
       });
+      return res;
     }
     return NextResponse.json(
       { message: 'Login successful, but no token data received.' },
