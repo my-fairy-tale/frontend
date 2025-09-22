@@ -13,23 +13,38 @@ interface Params {
 export async function GET(request: Request, props: Params) {
   const params = await props.params;
   const { bookId } = params;
-  const api_url = `http://218.51.41.52:9600/api/v1/books/${bookId}`;
-
+  const api_url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}`;
   const headers = request.headers;
 
-  const book = await fetch(api_url, {
-    method: 'GET',
-    headers: headers,
-  });
+  try {
+    const response = await fetch(api_url, {
+      method: 'GET',
+      headers: headers,
+    });
 
-  if (!book) {
+    if (!response) {
+      return NextResponse.json(
+        { message: '해당 책을 찾을 수 없습니다.' },
+        { status: 404 }
+      );
+    }
+
+    if (!response.ok) {
+      console.error('Error from external API:', response.statusText);
+      const errorData = await response.json();
+      return NextResponse.json(errorData, { status: response.status });
+    }
+
+    const book = await response.json();
+    return NextResponse.json(book);
+  } catch (err) {
     return NextResponse.json(
-      { message: '해당 책을 찾을 수 없습니다.' },
-      { status: 404 }
+      {
+        error: '서버 오류가 발생했습니다.',
+      },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json(book);
 }
 
 /**
@@ -38,13 +53,23 @@ export async function GET(request: Request, props: Params) {
 export async function DELETE(request: Request, props: Params) {
   const params = await props.params;
   const { bookId } = params;
+  const api_url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}`;
+  const headers = request.headers;
 
-  // 여기서 DB에서 bookId에 해당하는 책 정보를 삭제합니다.
-  // await db.book.delete({ where: { id: bookId } });
-
+  const response = await fetch(api_url, {
+    method: 'DELETE',
+    headers: headers,
+  });
   console.log(`[${bookId}] 책 정보 삭제`);
 
-  return NextResponse.json({
-    message: `[${bookId}] 책이 성공적으로 삭제되었습니다.`,
-  });
+  if (!response) {
+    return NextResponse.json(
+      { message: '해당 책을 찾을 수 없습니다.' },
+      { status: 404 }
+    );
+  }
+
+  const body = await response.json();
+
+  return NextResponse.json(body);
 }

@@ -6,6 +6,7 @@ import { ApiResponse } from '@/types/api';
 import { useState, useEffect } from 'react';
 import MyBookList from '@/components/book/my-book-list';
 import { FaUserCircle } from 'react-icons/fa';
+import { useQuery } from '@tanstack/react-query';
 
 interface UserProfileData {
   name: string;
@@ -13,33 +14,56 @@ interface UserProfileData {
   profileImageUrl?: string;
 }
 
+const fetchUserProfile = async () => {
+  const response = await apiFetch<ApiResponse<UserProfileData>>(
+    '/api/v1/members/me'
+  );
+  if (!response?.data) {
+    throw new Error('프로필 정보를 불러올 수 없습니다.');
+  }
+  return response.data;
+};
+
 function UserProfile() {
-  const [user, setUser] = useState<UserProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: user,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['userProfile', 'me'], // 이 쿼리를 식별하는 고유한 키
+    queryFn: fetchUserProfile, // 데이터를 가져오는 함수
+  });
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        // 서버에 자신의 프로필 정보를 요청하는 API
-        const profileData = await apiFetch<ApiResponse<UserProfileData>>(
-          '/api/v1/members/me',
-          {
-            method: 'GET',
-          }
-        );
-        setUser(profileData?.data || null);
-      } catch (error) {
-        console.error('프로필 정보를 가져오는데 실패했습니다.', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUserProfile();
-  }, []);
-
+  // 초기 로딩 상태
   if (isLoading) {
     return (
-      <div className="bg-gray-100 p-6 rounded-lg animate-pulse h-[150px]"></div>
+      <div className="bg-white p-6 rounded-lg shadow-md animate-pulse h-[128px]">
+        <div className="flex items-center space-x-6">
+          <div className="w-20 h-20 bg-gray-300 rounded-full"></div>
+          <div className="space-y-4 flex-grow">
+            <div className="h-6 bg-gray-300 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 에러 발생 상태
+  if (isError) {
+    return (
+      <div className="bg-red-50 p-6 rounded-lg text-red-700">
+        프로필 정보를 불러오는 데 실패했습니다: {error.message}
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="bg-red-50 p-6 rounded-lg text-red-700">
+        존재하지 않는 user입니다.
+      </div>
     );
   }
 
@@ -47,10 +71,21 @@ function UserProfile() {
     <section>
       <h2 className="text-xl font-semibold mb-4 text-gray-800">내 정보</h2>
       <div className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-6">
-        <FaUserCircle size={80} />
+        {user.profileImageUrl ? (
+          <img
+            src={user.profileImageUrl}
+            alt="Profile"
+            className="w-20 h-20 rounded-full object-cover"
+          />
+        ) : (
+          <FaUserCircle
+            size={80}
+            className="text-gray-300"
+          />
+        )}
         <div>
-          <p className="text-2xl font-bold text-gray-900">{user?.name}</p>
-          <p className="text-md text-gray-600">{user?.email}</p>
+          <p className="text-2xl font-bold text-gray-900">{user.name}</p>
+          <p className="text-md text-gray-600">{user.email}</p>
         </div>
       </div>
     </section>
