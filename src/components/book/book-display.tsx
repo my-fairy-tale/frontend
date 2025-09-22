@@ -45,8 +45,8 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   useEffect(() => {
     // 현재 페이지 이후의 이미지들을 미리 로드합니다.
     const preloadNextImages = (startIndex: number) => {
-      // 예를 들어, 다음 2개 페이지의 이미지를 미리 로드
-      const pagesToPreload = bookData.pages.slice(startIndex, startIndex + 2);
+      // 예를 들어, 다음 4개 페이지의 이미지를 미리 로드
+      const pagesToPreload = bookData.pages.slice(startIndex, startIndex + 4);
       pagesToPreload.forEach((page) => {
         if (page.imageUrl) {
           const img = new Image();

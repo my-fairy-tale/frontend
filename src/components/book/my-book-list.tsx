@@ -1,8 +1,8 @@
 'use client';
 
 import apiFetch from '@/lib/api';
-import { ApiResponse, MyBooksData } from '@/types/api';
-import { Fragment, useEffect } from 'react';
+import { ApiResponse, BookSummary, MyBooksData } from '@/types/api';
+import { Fragment, useEffect, useState } from 'react';
 import BookThumbnail from './book-thumbnail';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
@@ -19,57 +19,7 @@ const fetchMyBooks = async ({ pageParam = 0 }: { pageParam?: number }) => {
 };
 
 const MyBookList = () => {
-  // const [books, setBooks] = useState<BookSummary[]>([]);
-  // const [isLoading, setIsLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const fetchMyBooks = async () => {
-  //     try {
-  //       // 내가 만든 책 목록을 요청하는 API
-  //       const myBooksData = await apiFetch<ApiResponse<MyBooksData>>(
-  //         '/api/v1/books/my?status=COMPLETED&page=0&size=20',
-  //         {
-  //           method: 'GET',
-  //         }
-  //       );
-  //       if (myBooksData) {
-  //         setBooks(myBooksData.data?.books || []);
-  //       }
-  //     } catch (error) {
-  //       console.error('내가 만든 책 목록을 가져오는데 실패했습니다.', error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-  //   fetchMyBooks();
-  // }, []);
-
-  // return (
-  //   <section>
-  //     <h2 className="text-xl font-semibold mb-4 text-gray-800">내가 만든 책</h2>
-  //     {isLoading ? (
-  //       <p>책 목록을 불러오는 중...</p>
-  //     ) : books.length > 0 ? (
-  //       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-  //         {books.map((book) => (
-  //           <BookThumbnail
-  //             key={book.id}
-  //             id={book.id}
-  //             thumbnailUrl={book.thumbnailUrl}
-  //             title={book.title}
-  //             isPublic={book.visibility}
-  //           />
-  //         ))}
-  //       </div>
-  //     ) : (
-  //       <div className="text-center py-10 px-6 bg-gray-50 rounded-lg">
-  //         <p className="text-gray-600">아직 만든 책이 없습니다.</p>
-  //       </div>
-  //     )}
-  //   </section>
-  // );
-
-  // 1. useQuery를 useInfiniteQuery로 변경
+  const [books, setBooks] = useState<BookSummary[]>([]);
 
   const {
     data,
@@ -104,6 +54,37 @@ const MyBookList = () => {
     }
   }, [inView, hasNextPage, fetchNextPage]);
 
+  const handleStatusChange = async (
+    bookId: string,
+    newStatus: 'PUBLIC' | 'PRIVATE'
+  ) => {
+    try {
+      const result = await apiFetch<ApiResponse<null>>(
+        `/api/v1/books/${bookId}/visibility`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ visibility: newStatus }),
+        }
+      );
+      console.log(`Sending to backend: Book ${bookId} status -> ${newStatus}`);
+
+      if (result?.code === 'BOOK_4004') {
+        alert('니 동화책 아님!');
+        return;
+      }
+
+      // API 호출 성공 후, 부모의 전체 목록 상태도 업데이트
+      setBooks((currentBooks) =>
+        currentBooks.map((book) =>
+          book.id === bookId ? { ...book, isPublic: newStatus } : book
+        )
+      );
+    } catch (error) {
+      console.error('API call failed in parent:', error);
+      throw error; // 자식의 catch 블록으로 에러를 다시 전달
+    }
+  };
+
   if (isLoading) return <p>책 목록을 불러오는 중...</p>;
   if (isError) return <p>오류가 발생했습니다: {error.message}</p>;
 
@@ -127,7 +108,7 @@ const MyBookList = () => {
                     thumbnailUrl={book.thumbnailUrl}
                     title={book.title}
                     isPublic={book.visibility}
-                    // onStatusChange={...}
+                    onStatusChange={handleStatusChange}
                   />
                 ))}
               </Fragment>
