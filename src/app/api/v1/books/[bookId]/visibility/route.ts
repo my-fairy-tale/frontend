@@ -13,14 +13,18 @@ export async function PATCH(request: Request, props: Params) {
   const params = await props.params;
   const { bookId } = params;
   const api_url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}/visibility`;
-  const header = request.headers;
-  const body = request.body;
 
   try {
+    const requestBody = await request.json();
+    const authHeader = request.headers.get('authorization');
+
     const response = await fetch(api_url, {
       method: 'PATCH',
-      headers: header,
-      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader && { Authorization: authHeader }),
+      },
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
