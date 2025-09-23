@@ -23,10 +23,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased`}>
+      <body className={`antialiased flex flex-col h-full`}>
         <ReactQueryProvider>
           <Header />
-          <main>{children}</main>
+          {children}
           <Footer />
         </ReactQueryProvider>
       </body>
