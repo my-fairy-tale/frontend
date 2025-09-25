@@ -9,8 +9,18 @@ declare module 'next-auth' {
     accessToken?: string;
     error?: 'RefreshAccessTokenError';
     user: {
-      id: string; // token.sub를 저장할 속성
+      id: string;
+      name: string;
+      email: string;
     } & DefaultSession['user'];
+  }
+
+  interface User {
+    id: string;
+    name: string;
+    email: string;
+    accessToken: string;
+    refreshToken: string;
   }
 }
 
@@ -21,5 +31,10 @@ declare module 'next-auth/jwt' {
     refreshToken?: string;
     accessTokenExpires?: number; // access_token 만료 시간 (초 단위)
     error?: 'RefreshAccessTokenError';
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
   }
 }

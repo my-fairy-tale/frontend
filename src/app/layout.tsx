@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import GlobalModal from '@/components/ui/modal/global-modal';
 import ReactQueryProvider from '@/components/provider/react-query-provider';
 
 export const metadata: Metadata = {
@@ -23,10 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`antialiased flex flex-col h-full`}>
+      <body className="flex flex-col h-screen antialiased">
         <ReactQueryProvider>
           <Header />
           {children}
+          <GlobalModal />
           <Footer />
         </ReactQueryProvider>
       </body>

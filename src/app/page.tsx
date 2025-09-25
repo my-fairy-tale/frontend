@@ -18,7 +18,7 @@ const SnapSection = ({
 
 export default function HomePage() {
   return (
-    <main className="bg-gray-50 text-gray-800 overflow-y-scroll h-screen snap-y snap-mandatory">
+    <main className="bg-gray-50 text-gray-800">
       <SnapSection className="text-center py-20 md:py-32 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
@@ -85,30 +85,32 @@ export default function HomePage() {
               사람을 위한 서비스입니다. 복잡한 그림 기술 없이도, 당신의 소중한
               이야기를 아름다운 그림책으로 만들 수 있습니다.
             </p>
-            <ul className="space-y-4">
+            <ul className="space-y-5">
               <li className="flex items-start">
-                <span className="bg-blue-100 text-blue-600 font-bold rounded-full w-6 h-6 text-center mr-3 mt-1 flex-shrink-0">
+                <span className="bg-blue-100 text-blue-600 font-bold rounded-full w-6 h-6 text-center mr-3 flex-shrink-0">
                   ✓
                 </span>
-                <span>
-                  **무한한 상상력:** 어떤 이야기든 그림으로 구현됩니다.
+                <span className="text-center">
+                  <span className="font-black">무한한 상상력:</span> 어떤
+                  이야기든 그림으로 구현됩니다.
                 </span>
               </li>
               <li className="flex items-start">
-                <span className="bg-blue-100 text-blue-600 font-bold rounded-full w-6 h-6 text-center mr-3 mt-1 flex-shrink-0">
+                <span className="bg-blue-100 text-blue-600 font-bold rounded-full w-6 h-6 text-center mr-3 flex-shrink-0">
                   ✓
                 </span>
                 <span>
-                  **간편한 제작:** 글만 쓰면 나머지는 AI가 알아서 처리해줘요.
+                  <span className="font-black">간편한 제작:</span> 글만 쓰면
+                  나머지는 AI가 알아서 처리해줘요.
                 </span>
               </li>
               <li className="flex items-start">
-                <span className="bg-blue-100 text-blue-600 font-bold rounded-full w-6 h-6 text-center mr-3 mt-1 flex-shrink-0">
+                <span className="bg-blue-100 text-blue-600 font-bold rounded-full w-6 h-6 text-center mr-3 flex-shrink-0">
                   ✓
                 </span>
                 <span>
-                  **소중한 기록:** 아이의 이야기를 평생 간직할 수 있는 선물로
-                  만들어보세요.
+                  <span className="font-black">소중한 기록:</span> 아이의
+                  이야기를 평생 간직할 수 있는 선물로 만들어보세요.
                 </span>
               </li>
             </ul>

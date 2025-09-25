@@ -7,8 +7,10 @@ export interface ApiResponse<T> {
   data: T | null;
 }
 export interface AuthData {
+  id: number;
+  email: string;
+  name: string;
   accessToken: string;
-  //refreshToken: string;
   accessTokenExpiresIn: number;
   refreshTokenExpiresIn: number;
 }
