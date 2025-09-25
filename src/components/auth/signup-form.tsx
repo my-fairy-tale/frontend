@@ -1,8 +1,9 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { signUpAction } from '@/lib/server-action';
 import Link from 'next/link';
+import { useActionState } from 'react';
 
 function SignUpButton() {
   const { pending } = useFormStatus();
@@ -18,7 +19,7 @@ function SignUpButton() {
 }
 
 export default function SignUpForm() {
-  const [errorMessage, dispatch] = useFormState(signUpAction, undefined);
+  const [errorMessage, dispatch] = useActionState(signUpAction, undefined);
 
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
@@ -75,7 +76,7 @@ export default function SignUpForm() {
       <p className="text-sm text-center text-gray-600">
         이미 계정이 있으신가요?
         <Link
-          href="/login"
+          href="/auth/login"
           className="ml-1 font-medium text-blue-600 hover:underline"
         >
           로그인

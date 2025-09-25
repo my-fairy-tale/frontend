@@ -5,6 +5,7 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import GlobalModal from '@/components/ui/modal/global-modal';
 import ReactQueryProvider from '@/components/provider/react-query-provider';
+import AuthProvider from '@/components/provider/auth-provider';
 
 export const metadata: Metadata = {
   title: 'my fairy tale',
@@ -25,12 +26,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="flex flex-col h-screen antialiased">
-        <ReactQueryProvider>
-          <Header />
-          {children}
-          <GlobalModal />
-          <Footer />
-        </ReactQueryProvider>
+        <AuthProvider>
+          <ReactQueryProvider>
+            <Header />
+            {children}
+            <GlobalModal />
+            <Footer />
+          </ReactQueryProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -7,7 +7,7 @@ import 'next-auth/jwt';
 declare module 'next-auth' {
   interface Session {
     accessToken?: string;
-    error?: 'RefreshAccessTokenError';
+    error?: string;
     user: {
       id: string;
       name: string;
@@ -21,6 +21,7 @@ declare module 'next-auth' {
     email: string;
     accessToken: string;
     refreshToken: string;
+    accessTokenExpiresIn: number;
   }
 }
 
@@ -30,7 +31,7 @@ declare module 'next-auth/jwt' {
     accessToken?: string;
     refreshToken?: string;
     accessTokenExpires?: number; // access_token 만료 시간 (초 단위)
-    error?: 'RefreshAccessTokenError';
+    error?: string;
     user: {
       id: string;
       name: string;
