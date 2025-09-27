@@ -1,5 +1,8 @@
 'use client';
 
+import { getQueryClient } from '@/lib/get-query-client';
+import { ApiResponse, BookData } from '@/types/api';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -21,8 +24,41 @@ const BookThumbnail = ({
   isPublic: initialIsPublic,
   onStatusChange,
 }: BookThumbnailProps) => {
+  const queryClient = getQueryClient();
+  const { data: session } = useSession();
+
   const [isPublic, setIsPublic] = useState(initialIsPublic === 'PUBLIC');
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleMouseEnter = () => {
+    if (session?.accessToken) {
+      queryClient.prefetchQuery({
+        queryKey: ['book-detail', id],
+        queryFn: async () => {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${id}`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${session.accessToken}`,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch book');
+          }
+
+          const data: ApiResponse<BookData> = await response.json();
+          if (data?.code === 'BOOK_2002' && data.data) {
+            return data.data;
+          }
+          throw new Error(data?.message || '책을 찾을 수 없습니다.');
+        },
+        staleTime: 5 * 60 * 1000,
+      });
+    }
+  };
 
   const handleToggleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     // Link의 페이지 이동을 막음
@@ -51,10 +87,11 @@ const BookThumbnail = ({
   return (
     <Link
       className="bg-white rounded-lg shadow-md overflow-hidden"
+      onMouseEnter={handleMouseEnter}
       href={`/books/${id}`}
     >
       <img
-        src={thumbnailUrl || 'https://via.placeholder.com/150x200'}
+        src={thumbnailUrl || '/book_placeholder.jpg'}
         alt={title}
         className="w-full h-48 object-cover"
       />

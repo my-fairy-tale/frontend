@@ -6,11 +6,15 @@ import { useEffect, useState } from 'react';
 import { FaBook } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
 import { logoutAction } from '@/lib/server-action';
+import { getQueryClient } from '@/lib/get-query-client';
 
 const Header = () => {
+  const queryClient = getQueryClient();
+
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const isLoggedIn = status === 'authenticated';
+
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 

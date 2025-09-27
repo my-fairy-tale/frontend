@@ -13,7 +13,7 @@ import { useInView } from 'react-intersection-observer';
 import { useSession } from 'next-auth/react';
 
 // API 호출 함수: pageParam을 인자로 받도록 수정
-const fetchMyBooks = async ({
+export const fetchMyBooks = async ({
   pageParam = 0,
   accessToken,
 }: {
