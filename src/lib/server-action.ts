@@ -65,7 +65,7 @@ export async function signUpAction(
     if (data.code === 'AUTH_4001') {
       return '이미 존재하는 이메일입니다.';
     }
-  } catch (error) {
+  } catch {
     return '서버와 통신 중 오류가 발생했습니다.';
   }
 

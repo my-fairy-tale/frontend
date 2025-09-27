@@ -41,6 +41,7 @@ export async function GET(request: Request, props: Params) {
     return NextResponse.json(
       {
         error: '서버 오류가 발생했습니다.',
+        err,
       },
       { status: 500 }
     );

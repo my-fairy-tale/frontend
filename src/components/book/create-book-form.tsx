@@ -54,10 +54,9 @@ export default function CreateBookForm() {
       } else {
         throw new Error(response?.message || '알 수 없는 오류가 발생했습니다.');
       }
-    } catch (error: any) {
+    } catch (error) {
       setNotification({
-        message:
-          error.message || '동화책 생성에 실패했어요. 다시 시도해 주세요.',
+        message: `${error}` || '동화책 생성에 실패했어요. 다시 시도해 주세요.',
         type: 'error',
       });
     } finally {

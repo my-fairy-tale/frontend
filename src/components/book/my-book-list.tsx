@@ -1,6 +1,6 @@
 'use client';
 
-import { ApiResponse, BookSummary, MyBooksData } from '@/types/api';
+import { ApiResponse, MyBooksData } from '@/types/api';
 import { Fragment, useEffect } from 'react';
 import BookThumbnail from './book-thumbnail';
 import {
@@ -88,7 +88,13 @@ const MyBookList = () => {
         console.log('session is Loading');
       }
     }
-  }, [inView, hasNextPage, fetchNextPage, isFetchingNextPage]);
+  }, [
+    inView,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    session?.accessToken,
+  ]);
 
   const handleStatusChange = async (
     bookId: string,
@@ -97,7 +103,7 @@ const MyBookList = () => {
     updateBookVisibility({ bookId, newStatus });
   };
 
-  const { mutate: updateBookVisibility, isPending } = useMutation({
+  const { mutate: updateBookVisibility } = useMutation({
     mutationFn: async ({
       bookId,
       newStatus,

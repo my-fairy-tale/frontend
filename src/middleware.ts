@@ -14,7 +14,7 @@ export default auth((req) => {
 
   // 공개 경로들
   const publicRoutes = ['/auth', '/'];
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+  // const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
 
   // 로그인하지 않았는데 보호된 경로에 접근
   if (isProtectedRoute && !isLoggedIn) {

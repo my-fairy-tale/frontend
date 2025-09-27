@@ -1,3 +1,4 @@
+import { ApiResponse, AuthData } from '@/types/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -27,11 +28,15 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    const data = await response.json();
+    const data: ApiResponse<AuthData> = await response.json();
 
     // 4. 백엔드 서버가 에러를 반환한 경우 (예: refreshToken 만료)
     if (!response.ok) {
       throw new Error(data.message || '토큰 갱신에 실패했습니다.');
+    }
+
+    if (!data.data) {
+      throw new Error(data.message || '유효하지 않은 토큰');
     }
 
     // 5. 성공 시, 새로 발급받은 accessToken을 클라이언트에 전달합니다.

@@ -1,7 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import apiFetch from '@/lib/api';
 import { ApiResponse, BookData } from '@/types/api';
 import BookDisplay from './book-display'; // 실제 UI 컴포넌트
 import { useSession } from 'next-auth/react';

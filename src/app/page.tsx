@@ -81,9 +81,9 @@ export default function HomePage() {
           <div className="order-2 md:order-1">
             <h2 className="text-3xl font-bold mb-4">모두가 동화 작가</h2>
             <p className="text-gray-600 mb-6 text-lg">
-              '나의 동화책'은 아이와 부모님, 그리고 이야기를 사랑하는 모든
-              사람을 위한 서비스입니다. 복잡한 그림 기술 없이도, 당신의 소중한
-              이야기를 아름다운 그림책으로 만들 수 있습니다.
+              &apos;나의 동화책&apos;은 아이와 부모님, 그리고 이야기를 사랑하는
+              모든 사람을 위한 서비스입니다. 복잡한 그림 기술 없이도, 당신의
+              소중한 이야기를 아름다운 그림책으로 만들 수 있습니다.
             </p>
             <ul className="space-y-5">
               <li className="flex items-start">

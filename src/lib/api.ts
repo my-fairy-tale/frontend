@@ -3,7 +3,7 @@ import { useSession } from 'next-auth/react';
 import { RequestInit } from 'next/dist/server/web/spec-extension/request';
 
 // client에서 공통으로 사용할 apiFetch함수
-async function apiFetch<T>(
+async function ApiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T | null> {
@@ -107,4 +107,4 @@ async function apiFetch<T>(
   }
 }
 
-export default apiFetch;
+export default ApiFetch;
