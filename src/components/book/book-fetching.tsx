@@ -50,8 +50,8 @@ export default function BookFetching({ slug }: { slug: string }) {
   });
 
   if (isLoading) return <div>책을 불러오는 중...</div>;
-  if (error) return <div>오류: {error.message}</div>;
   if (!bookData) return <div>해당 책을 찾을 수 없습니다.</div>;
+  if (error) return <div>오류: {error.message}</div>;
 
   return <BookDisplay bookData={bookData} />;
 }

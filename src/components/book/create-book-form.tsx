@@ -7,9 +7,10 @@ import { useRouter } from 'next/navigation';
 import { ApiResponse, CreateBookData, CreateBookPageProps } from '@/types/api';
 import apiFetch from '@/lib/api';
 import Notification from '@/components/ui/notification';
+import { useSession } from 'next-auth/react';
 
 export default function CreateBookForm() {
-  // 1. title 상태 추가 및 form 데이터 통합 관리
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({ title: '', story: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: '' });
@@ -41,7 +42,8 @@ export default function CreateBookForm() {
         {
           method: 'POST',
           body: JSON.stringify(body),
-        }
+        },
+        session?.accessToken
       );
 
       if (response?.code === 'BOOK_2001' && response.data) {

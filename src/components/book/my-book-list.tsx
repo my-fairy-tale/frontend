@@ -61,7 +61,7 @@ const MyBookList = () => {
       }
       return await fetchMyBooks({
         pageParam: pageParam,
-        accessToken: session?.accessToken!,
+        accessToken: session.accessToken,
       });
     },
     initialPageParam: 0, // 첫 페이지는 0번
