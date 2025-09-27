@@ -1,22 +1,34 @@
+// middleware.ts
 import { auth } from '@/auth';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  const session = await auth();
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
 
-  if (!session && request.nextUrl.pathname.startsWith('/auth')) {
-    return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_BASE_HOST}/auth/login`
-    );
+  // 인증이 필요한 경로들
+  const protectedRoutes = ['/books', '/mypage', '/admin'];
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    nextUrl.pathname.startsWith(route)
+  );
+
+  // 공개 경로들
+  const publicRoutes = ['/auth', '/'];
+  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
+
+  // 로그인하지 않았는데 보호된 경로에 접근
+  if (isProtectedRoute && !isLoggedIn) {
+    return NextResponse.redirect(new URL('/auth/login', nextUrl));
   }
 
-  if (request.nextUrl.pathname.startsWith('/auth')) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_HOST}/mypage`);
+  // 로그인했는데 로그인 페이지에 접근
+  if (isLoggedIn && nextUrl.pathname.startsWith('/auth')) {
+    return NextResponse.redirect(new URL('/mypage', nextUrl));
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
-  matcher: ['/mypage', '/books/create', '/books/:path*', '/dashboard/:path*'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
