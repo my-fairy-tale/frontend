@@ -104,7 +104,7 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
-        token.accessTokenExpires =
+        token.accessTokenExpiresIn =
           Date.now() + user.accessTokenExpiresIn * 1000;
         token.user = {
           id: user.id,
@@ -114,7 +114,7 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
         return token;
       }
 
-      if (Date.now() < token.accessTokenExpires!) {
+      if (Date.now() < token.accessTokenExpiresIn!) {
         return token;
       }
 

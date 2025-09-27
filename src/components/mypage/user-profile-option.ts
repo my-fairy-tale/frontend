@@ -1,6 +1,4 @@
 import { auth } from '@/auth';
-import apiFetch from '@/lib/api';
-import { ApiResponse, UserProfileData } from '@/types/api';
 import { queryOptions } from '@tanstack/react-query';
 
 export const userProfileOption = queryOptions({
@@ -24,7 +22,6 @@ export const userProfileOption = queryOptions({
     if (!data.data) {
       throw new Error('user 정보가 없습니다!');
     }
-    console.log('data is', data);
     return data.data;
   },
 });

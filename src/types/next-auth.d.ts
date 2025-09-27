@@ -30,7 +30,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     accessToken?: string;
     refreshToken?: string;
-    accessTokenExpires?: number; // access_token 만료 시간 (초 단위)
+    accessTokenExpiresIn?: number; // access_token 만료 시간 (초 단위)
     error?: string;
     user: {
       id: string;
