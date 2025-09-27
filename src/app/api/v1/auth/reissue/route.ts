@@ -42,13 +42,13 @@ export async function POST(request: NextRequest) {
     // 5. 성공 시, 새로 발급받은 accessToken을 클라이언트에 전달합니다.
     const { accessToken } = data.data;
     return NextResponse.json({ accessToken });
-  } catch (error: any) {
-    console.error('Refresh token API error:', error.message);
+  } catch (error) {
+    console.error('Refresh token API error:', error);
 
     // 6. 재발급 과정에서 에러 발생 시 클라이언트에게 실패를 알립니다.
     return NextResponse.json(
       {
-        message: error.message || '세션이 만료되었습니다. 다시 로그인해주세요.',
+        message: error || '세션이 만료되었습니다. 다시 로그인해주세요.',
       },
       { status: 401 }
     );
