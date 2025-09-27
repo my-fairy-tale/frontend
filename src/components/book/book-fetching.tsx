@@ -28,6 +28,10 @@ const fetchBookDetail = async (slug: string, accessToken?: string) => {
 
   const data: ApiResponse<BookData> = await response.json();
 
+  if (data.code === 'BOOK_4005') {
+    throw new Error(data.message || '열람할 수 없는 책입니다.');
+  }
+
   if (data?.code === 'BOOK_2002' && data.data) {
     return data.data;
   }

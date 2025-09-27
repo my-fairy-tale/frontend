@@ -1,10 +1,29 @@
+import BookThumbnail from '@/components/book/book-thumbnail';
 import Link from 'next/link';
 
 // 예시 데이터: 실제로는 DB에서 동화책 목록을 가져와야 합니다.
 const sampleBooks = [
-  { id: '1', title: '아기 돼지 삼형제' },
-  { id: '2', title: '헨젤과 그레텔' },
-  { id: 'the-little-prince', title: '어린 왕자' },
+  {
+    id: '83d1db29-49d5-4400-86e3-89e0e313a2eb',
+    title: '귀여운 고양이',
+    thumbnailUrl:
+      'https://childrens-book-files.s3.ap-northeast-2.amazonaws.com/books/83d1db29-49d5-4400-86e3-89e0e313a2eb/images/cover.png', // 실제 이미지 경로로 변경
+    visibility: 'PUBLIC' as const,
+  },
+  {
+    id: '95470e94-fa28-463f-8195-39cef43583d5',
+    title: '용감한 토끼의 당근찾기 모험',
+    thumbnailUrl:
+      'https://childrens-book-files.s3.ap-northeast-2.amazonaws.com/books/95470e94-fa28-463f-8195-39cef43583d5/images/cover.png',
+    visibility: 'PUBLIC' as const,
+  },
+  {
+    id: 'c5b013df-2d92-47ab-9996-af4a719cd17a',
+    title: '귀여운 강아지',
+    thumbnailUrl:
+      'https://childrens-book-files.s3.ap-northeast-2.amazonaws.com/books/95470e94-fa28-463f-8195-39cef43583d5/images/cover.png',
+    visibility: 'PUBLIC' as const,
+  },
 ];
 
 const BooksPage = () => {
@@ -28,21 +47,23 @@ const BooksPage = () => {
 
       <hr className="my-12" />
 
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">
-        ✨ 완성된 동화책 구경하기
-      </h2>
-      <ul className="space-y-4">
-        {sampleBooks.map((book) => (
-          <li key={book.id}>
-            <Link
-              href={`/books/${book.id}`}
-              className="text-xl text-blue-500 hover:text-blue-700 hover:underline"
-            >
-              {book.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <section>
+        <h2 className="text-3xl font-bold text-gray-800 mb-6">
+          ✨ 완성된 동화책 구경하기
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          {sampleBooks.map((book) => (
+            <BookThumbnail
+              key={book.id}
+              id={book.id}
+              thumbnailUrl={book.thumbnailUrl}
+              title={book.title}
+              isPublic={book.visibility}
+              showStatusButtons={false} // 공개 페이지에서는 상태 버튼 숨김
+            />
+          ))}
+        </div>
+      </section>
     </main>
   );
 };

@@ -11,10 +11,8 @@ interface BookThumbnailProps {
   thumbnailUrl: string;
   title: string;
   isPublic: 'PUBLIC' | 'PRIVATE';
-  onStatusChange: (
-    bookId: string,
-    newStatus: 'PUBLIC' | 'PRIVATE'
-  ) => Promise<void>;
+  onStatusChange?: (bookId: string, newStatus: 'PUBLIC' | 'PRIVATE') => void;
+  showStatusButtons?: boolean;
 }
 
 const BookThumbnail = ({
@@ -22,7 +20,8 @@ const BookThumbnail = ({
   thumbnailUrl,
   title,
   isPublic: initialIsPublic,
-  onStatusChange,
+  onStatusChange = (bookID, stauts) => {},
+  showStatusButtons = true,
 }: BookThumbnailProps) => {
   const queryClient = getQueryClient();
   const { data: session } = useSession();
@@ -108,23 +107,25 @@ const BookThumbnail = ({
         <h3 className="font-bold text-gray-800 truncate mb-2">{title}</h3>
 
         {/* 토글 스위치 UI */}
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-sm text-gray-600 select-none">공개 설정</span>
-          <button
-            type="button"
-            onClick={handleToggleClick}
-            disabled={isLoading}
-            className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 ${
-              isPublic ? 'bg-blue-600' : 'bg-gray-200'
-            }`}
-          >
-            <span
-              className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-200 ease-in-out ${
-                isPublic ? 'translate-x-6' : 'translate-x-1'
+        {showStatusButtons && (
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-sm text-gray-600 select-none">공개 설정</span>
+            <button
+              type="button"
+              onClick={handleToggleClick}
+              disabled={isLoading}
+              className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 ${
+                isPublic ? 'bg-blue-600' : 'bg-gray-200'
               }`}
-            />
-          </button>
-        </div>
+            >
+              <span
+                className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-200 ease-in-out ${
+                  isPublic ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        )}
       </div>
     </Link>
   );
