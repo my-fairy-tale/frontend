@@ -13,8 +13,10 @@ export async function loginAction(
     await signIn('credentials', {
       email: formData.get('email') as string,
       password: formData.get('password') as string,
-      redirectTo: '/',
+      redirect: false,
     });
+
+    return 'SUCCESS';
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
