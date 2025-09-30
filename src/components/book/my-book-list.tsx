@@ -181,7 +181,6 @@ const MyBookList = () => {
       {!noBookExist ? (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {/* 3. 중첩 map을 사용하여 모든 페이지의 책들을 렌더링 */}
             {data.pages.map((page, i) => (
               <Fragment key={i}>
                 {page.books.map((book) => (

@@ -104,6 +104,36 @@ export interface UserProfileData {
   createdAt: string;
 }
 
+export interface LibraryBookListData {
+  posts: LibraryBooksData[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+export interface LibraryBooksData {
+  postId: number;
+  title: string;
+  content: string;
+  authorName: string;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
+  book: {
+    bookId: string;
+    originalTitle: string;
+    thumbnailUrl: string;
+    targetAge: number;
+    theme: string;
+    style: string;
+  };
+  averageRating: 5;
+  reviewCount: 1;
+}
+
 export enum BookStatus {
   PROCESSING = 'PROCESSING',
   COMPLETED = 'COMPLETED',

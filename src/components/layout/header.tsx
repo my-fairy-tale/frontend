@@ -39,7 +39,7 @@ const Header = () => {
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/books', label: '동화책 만들기' },
-    { href: '/community', label: '커뮤니티' },
+    { href: '/library', label: '모두의 서재' },
     { href: '/mypage', label: '마이페이지' },
   ];
 
