@@ -2,7 +2,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/get-query-client';
 import { userProfileOption } from '../../components/mypage/user-profile-option';
 import UserProfile from '../../components/mypage/user-profile';
-import MyBookList from '@/components/book/my-book-list';
+import MyBookList from '@/components/mypage/my-book-list';
 import { myBookOption } from '@/components/mypage/my-book-option';
 
 export default async function MyPage() {

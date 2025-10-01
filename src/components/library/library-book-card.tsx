@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
-import { BookSummary, LibraryBooksData } from '@/types/api';
+import { LibraryBooksData } from '@/types/api';
 
 interface LibraryBookCardProps {
   post: LibraryBooksData;
@@ -12,7 +12,7 @@ interface LibraryBookCardProps {
 const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
   return (
     <Link
-      href={`/community/${post.postId}`}
+      href={`/library/${post.postId}`}
       className="group block"
     >
       <div className="flex flex-col h-full">

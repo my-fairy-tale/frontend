@@ -1,9 +1,9 @@
 import BookDetailInfo from '@/components/library/book-detail-info';
 import BookReviews from '@/components/library/book-reviews';
-import LoadingSkeleton from '@/components/ui/loading-skeleton';
+import { libraryDetailBookOption } from '@/components/library/library-detail-book-option';
+import { libraryDetailReviewOption } from '@/components/library/library-detail-review-option';
 import { getQueryClient } from '@/lib/get-query-client';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
-import { Suspense } from 'react';
 
 export default async function LibraryDetailPage(props: {
   params: Promise<{ slug: string }>;
@@ -12,7 +12,8 @@ export default async function LibraryDetailPage(props: {
   const queryClient = getQueryClient();
 
   try {
-    //await queryClient.prefetchQuery();
+    await queryClient.prefetchQuery(libraryDetailBookOption(slug));
+    await queryClient.prefetchInfiniteQuery(libraryDetailReviewOption(slug));
   } catch (err) {
     console.log('book prefetch failed', err);
   }
@@ -21,18 +22,10 @@ export default async function LibraryDetailPage(props: {
 
   return (
     <main>
-      <Suspense fallback={<LoadingSkeleton />}>
-        <HydrationBoundary state={dehydratedState}>
-          <BookDetailInfo bookId={slug} />
-        </HydrationBoundary>
-      </Suspense>
-      <div className="mt-12">
-        <Suspense>
-          <HydrationBoundary state={dehydratedState}>
-            <BookReviews bookId={slug} />
-          </HydrationBoundary>
-        </Suspense>
-      </div>
+      <HydrationBoundary state={dehydratedState}>
+        <BookDetailInfo slug={slug} />
+        <BookReviews slug={slug} />
+      </HydrationBoundary>
     </main>
   );
 }

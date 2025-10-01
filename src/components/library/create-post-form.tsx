@@ -5,53 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { fetchMyBooks } from '../book/my-book-list';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { fetchMyBooks } from '../mypage/my-book-list';
 
 export default function CreatePostForm() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 사용자의 책 목록 (임시 데이터)
-  const [myBookstemp] = useState([
-    {
-      id: 'book-1',
-      title: '숲 속의 모험',
-      thumbnailUrl: '/book_placeholder.jpg',
-      pageCount: 12,
-    },
-    {
-      id: 'book-2',
-      title: '용감한 토끼',
-      thumbnailUrl: '/book_placeholder.jpg',
-      pageCount: 8,
-    },
-    {
-      id: 'book-3',
-      title: '마법의 성',
-      thumbnailUrl: '/book_placeholder.jpg',
-      pageCount: 15,
-    },
-    {
-      id: 'book-1',
-      title: '숲 속의 모험',
-      thumbnailUrl: '/book_placeholder.jpg',
-      pageCount: 12,
-    },
-    {
-      id: 'book-1',
-      title: '숲 속의 모험',
-      thumbnailUrl: '/book_placeholder.jpg',
-      pageCount: 12,
-    },
-    {
-      id: 'book-1',
-      title: '숲 속의 모험',
-      thumbnailUrl: '/book_placeholder.jpg',
-      pageCount: 12,
-    },
-  ]);
 
   const {
     data: myBooks,
@@ -140,28 +99,28 @@ export default function CreatePostForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/v1/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-        body: JSON.stringify({
-          bookId: selectedBookId,
-          title,
-          content,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+          body: JSON.stringify({
+            bookId: selectedBookId,
+            title,
+            content,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error('게시글 등록에 실패했습니다.');
       }
 
-      // 임시: 2초 딜레이
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
       alert('책이 성공적으로 게시되었습니다!');
-      router.push('/community');
+      router.push('/library');
       router.refresh();
     } catch (error) {
       console.error('게시 실패:', error);
@@ -219,10 +178,10 @@ export default function CreatePostForm() {
                       : 'border-transparent hover:border-gray-300'
                   }`}
                 >
-                  <Image
+                  <img
                     src={book.thumbnailUrl}
                     alt={book.title}
-                    fill
+                    //fill
                     className="object-cover"
                   />
                   {selectedBookId === book.id && (

@@ -4,48 +4,132 @@
 import { useState } from 'react';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
-
-interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-}
+import { ReviewData, ReviewListData } from '@/types/api';
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { libraryDetailReviewOption } from './library-detail-review-option';
 
 interface BookReviewsProps {
-  bookId: string;
+  slug: string;
 }
 
-export default function BookReviews({ bookId }: BookReviewsProps) {
+export default function BookReviews({ slug }: BookReviewsProps) {
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
-  const [reviews, setReviews] = useState<Review[]>([
-    // TODO: 실제 API에서 가져오기
-    {
-      id: '1',
-      userId: 'user1',
-      userName: '독서왕',
-      rating: 5,
-      comment: '정말 재미있는 동화책이에요! 아이가 너무 좋아합니다.',
-      createdAt: '2025-01-20',
-    },
-    {
-      id: '2',
-      userId: 'user2',
-      userName: '책벌레',
-      rating: 4,
-      comment: '그림이 예쁘고 이야기도 감동적이네요.',
-      createdAt: '2025-01-19',
-    },
-  ]);
 
   const [isWriting, setIsWriting] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [hoveredRating, setHoveredRating] = useState(0);
 
-  const handleSubmitReview = async (e: React.FormEvent) => {
+  const {
+    data: reviews,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+  } = useInfiniteQuery(libraryDetailReviewOption(slug));
+
+  const { mutate: submitReview } = useMutation({
+    mutationFn: async ({
+      rating,
+      comment,
+      isAnonymous,
+    }: {
+      rating: number;
+      comment: string;
+      isAnonymous: boolean;
+    }) => {
+      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/reviews`;
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          rating,
+          comment,
+          isAnonymous,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('리뷰 등록에 실패했습니다.');
+      }
+
+      const data = await response.json();
+      if (data.code !== 'REVIEW_2001') {
+        throw new Error(data?.message || '리뷰 등록에 실패했습니다.');
+      }
+
+      return data;
+    },
+    onMutate: (variables) => {
+      queryClient.cancelQueries({ queryKey: ['library-detail-review', slug] });
+      const previousData = queryClient.getQueryData<
+        InfiniteData<ReviewListData>
+      >(['library-detail-review', slug]);
+
+      queryClient.setQueryData<InfiniteData<ReviewListData>>(
+        ['library-detail-review', slug],
+        (oldData) => {
+          if (!oldData) return oldData;
+
+          const newReview: ReviewData = {
+            reviewId: 100000,
+            rating: variables.rating,
+            comment: variables.comment,
+            authorName: '나',
+            isAnonymous: variables.isAnonymous,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isMine: true,
+          };
+
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              reviews: [newReview, ...page.reviews],
+            })),
+          };
+        }
+      );
+
+      return { previousData };
+    },
+    onSuccess: (data, variables) => {
+      alert('리뷰가 성공적으로 등록되었습니다!');
+      setNewComment('');
+      setNewRating(5);
+      setIsWriting(false);
+    },
+    onError: (error, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ['library-detail-review', slug],
+          context.previousData
+        );
+      }
+
+      console.error('리뷰 등록 실패:', error);
+      alert('리뷰 등록에 실패했습니다. 다시 시도해주세요.');
+    },
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['library-detail-review', slug],
+      });
+    },
+  });
+
+  const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!session) {
@@ -53,27 +137,23 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
       return;
     }
 
-    // TODO: 리뷰 작성 API 호출
-    const newReview: Review = {
-      id: Date.now().toString(),
-      userId: session.user.id,
-      userName: session.user.name || '익명',
+    submitReview({
       rating: newRating,
       comment: newComment,
-      createdAt: new Date().toISOString(),
-    };
-
-    setReviews([newReview, ...reviews]);
-    setNewComment('');
-    setNewRating(5);
-    setIsWriting(false);
+      isAnonymous: false,
+    });
   };
+
+  if (isLoading) return <p>리뷰 목록을 불러오는 중...</p>;
+  if (isError) return <p>오류가 발생했습니다: {error.message}</p>;
+
+  const allReviews = reviews?.pages.flatMap((page) => page.reviews) || [];
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          리뷰 ({reviews.length})
+          리뷰 ({allReviews.length})
         </h2>
 
         {!isWriting && session && (
@@ -176,20 +256,20 @@ export default function BookReviews({ bookId }: BookReviewsProps) {
 
       {/* 리뷰 목록 */}
       <div className="space-y-4">
-        {reviews.length === 0 ? (
+        {allReviews.length === 0 ? (
           <p className="text-center text-gray-600 py-8">
             아직 작성된 리뷰가 없습니다. 첫 번째 리뷰를 작성해보세요!
           </p>
         ) : (
-          reviews.map((review) => (
+          allReviews.map((review) => (
             <div
-              key={review.id}
+              key={review.reviewId}
               className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <p className="font-semibold text-gray-900">
-                    {review.userName}
+                    {review.authorName}
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     {[...Array(5)].map((_, i) => (

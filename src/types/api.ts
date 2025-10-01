@@ -130,8 +130,56 @@ export interface LibraryBooksData {
     theme: string;
     style: string;
   };
-  averageRating: 5;
-  reviewCount: 1;
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface LibraryDetailBookData {
+  postId: number;
+  title: string;
+  content: string;
+  authorName: string;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
+  book: {
+    bookId: string;
+    originalTitle: string;
+    thumbnailUrl: string;
+    targetAge: number;
+    theme: BookTheme;
+    style: BookStyle;
+  };
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface ReviewListData {
+  bookInfo: {
+    bookId: string;
+    title: string;
+    averageRating: number;
+    reviewCount: number;
+  };
+  reviews: ReviewData[];
+  pageInfo: {
+    totalElements: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    isFirst: boolean;
+    isLast: boolean;
+  };
+}
+export interface ReviewData {
+  reviewId: number;
+  rating: number;
+  comment: string;
+  authorName: string;
+  isAnonymous: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isMine: boolean;
 }
 
 export enum BookStatus {

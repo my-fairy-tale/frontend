@@ -103,6 +103,60 @@ const MyBookList = () => {
     updateBookVisibility({ bookId, newStatus });
   };
 
+  const { mutate: deleteBook } = useMutation({
+    mutationFn: async ({ bookId }: { bookId: string }) => {
+      try {
+        if (!session?.accessToken) {
+          throw new Error('인증 정보가 없습니다.');
+        }
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to delete book');
+        }
+
+        const data: ApiResponse<null> = await response.json();
+        if (data.code !== 'BOOK_2005') {
+          throw new Error(data.message || '책 삭제에 실패했습니다.');
+        }
+        return bookId;
+      } catch (err) {
+        console.log('api call failed in parent', err);
+        throw err;
+      }
+    },
+    onSuccess: (bookId) => {
+      // Remove the deleted book from the cache
+      queryClient.setQueryData<InfiniteData<MyBooksData>>(
+        ['myBooksInfinite'],
+        (oldData) => {
+          if (!oldData) return oldData;
+
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              books: page.books.filter((book) => book.id !== bookId),
+            })),
+          };
+        }
+      );
+    },
+    onError: (error) => {
+      console.error('책 삭제 실패:', error);
+      alert('책 삭제에 실패했습니다. 다시 시도해주세요.');
+    },
+  });
+
   const { mutate: updateBookVisibility } = useMutation({
     mutationFn: async ({
       bookId,
@@ -132,7 +186,7 @@ const MyBookList = () => {
         }
 
         const data: ApiResponse<null> = await response.json();
-        if (data?.code === 'BOOK_4004') {
+        if (data.code !== 'BOOK_2006') {
           throw new Error('not my books');
         }
         return data.data;
@@ -190,6 +244,7 @@ const MyBookList = () => {
                     thumbnailUrl={book.thumbnailUrl}
                     title={book.title}
                     isPublic={book.visibility}
+                    onDelete={() => deleteBook({ bookId: book.id })}
                     onStatusChange={handleStatusChange}
                   />
                 ))}
