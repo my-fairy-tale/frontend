@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
+import useModalStore from '@/store/use-modal-store';
+import MyBookDeleteModal from '@/components/ui/modal/mybook-delete-modal';
 
 interface BookThumbnailProps {
   id: string;
@@ -28,10 +30,10 @@ const BookThumbnail = ({
 }: BookThumbnailProps) => {
   const queryClient = getQueryClient();
   const { data: session } = useSession();
+  const { openModal, closeModal } = useModalStore();
 
   const [isPublic, setIsPublic] = useState(initialIsPublic === 'PUBLIC');
   const [isLoading, setIsLoading] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleMouseEnter = () => {
     if (session?.accessToken) {
@@ -87,33 +89,29 @@ const BookThumbnail = ({
   const handleDeleteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setShowDeleteConfirm(true);
+
+    openModal(
+      <MyBookDeleteModal
+        title={title}
+        onConfirm={handleConfirmDelete}
+        isLoading={isLoading}
+      />
+    );
   };
 
-  const handleConfirmDelete = async (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const handleConfirmDelete = async () => {
     if (!onDelete) return;
 
     setIsLoading(true);
     try {
       await onDelete(id);
+      closeModal();
     } catch (error) {
       console.error('삭제 실패:', error);
       alert('책 삭제에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
-      setShowDeleteConfirm(false);
     }
-  };
-
-  const handleCancelDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowDeleteConfirm(false);
   };
   return (
     <div className="relative bg-white rounded-lg shadow-md overflow-hidden">
@@ -179,48 +177,6 @@ const BookThumbnail = ({
           )}
         </div>
       </Link>
-
-      {/* 삭제 확인 모달 */}
-      {showDeleteConfirm && (
-        <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 rounded-lg"
-          //onClick={handleCancelDelete}
-        >
-          <div
-            className="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
-              책 삭제 확인
-            </h3>
-            <p className="text-gray-700 mb-6">
-              &quot;{title}&quot;을(를) 삭제하시겠습니까?
-              <br />이 작업은 되돌릴 수 없습니다.
-            </p>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={isLoading}
-                className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 font-semibold"
-              >
-                {isLoading ? '삭제 중...' : '삭제'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancelDelete}
-                disabled={isLoading}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 font-semibold"
-              >
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

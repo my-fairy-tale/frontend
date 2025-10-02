@@ -1,17 +1,16 @@
 // components/community/book-reviews.tsx
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
-import { ReviewData, ReviewListData } from '@/types/api';
 import {
-  InfiniteData,
   useInfiniteQuery,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query';
 import { libraryDetailReviewOption } from './library-detail-review-option';
+import { useInView } from 'react-intersection-observer';
 
 interface BookReviewsProps {
   slug: string;
@@ -46,7 +45,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       comment: string;
       isAnonymous: boolean;
     }) => {
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/reviews`;
+      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}/reviews`;
       const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
@@ -61,6 +60,9 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       });
 
       if (!response.ok) {
+        if (response.status === 400) {
+          throw new Error('나의 글에는 리뷰를 작성할 수 없습니다.');
+        }
         throw new Error('리뷰 등록에 실패했습니다.');
       }
 
@@ -71,63 +73,40 @@ export default function BookReviews({ slug }: BookReviewsProps) {
 
       return data;
     },
-    onMutate: (variables) => {
-      queryClient.cancelQueries({ queryKey: ['library-detail-review', slug] });
-      const previousData = queryClient.getQueryData<
-        InfiniteData<ReviewListData>
-      >(['library-detail-review', slug]);
-
-      queryClient.setQueryData<InfiniteData<ReviewListData>>(
-        ['library-detail-review', slug],
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          const newReview: ReviewData = {
-            reviewId: 100000,
-            rating: variables.rating,
-            comment: variables.comment,
-            authorName: '나',
-            isAnonymous: variables.isAnonymous,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            isMine: true,
-          };
-
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page) => ({
-              ...page,
-              reviews: [newReview, ...page.reviews],
-            })),
-          };
-        }
-      );
-
-      return { previousData };
-    },
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       alert('리뷰가 성공적으로 등록되었습니다!');
       setNewComment('');
       setNewRating(5);
       setIsWriting(false);
     },
-    onError: (error, variables, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(
-          ['library-detail-review', slug],
-          context.previousData
-        );
+    onError: (error) => {
+      if (error.message === '나의 글에는 리뷰를 작성할 수 없습니다.') {
+        alert(error.message);
+        return;
       }
 
       console.error('리뷰 등록 실패:', error);
       alert('리뷰 등록에 실패했습니다. 다시 시도해주세요.');
     },
-    onSettled: (data, error, variables) => {
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ['library-detail-review', slug],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['library-detail-book', slug],
+      });
     },
   });
+
+  const { ref, inView } = useInView({
+    threshold: 0.5,
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -261,36 +240,55 @@ export default function BookReviews({ slug }: BookReviewsProps) {
             아직 작성된 리뷰가 없습니다. 첫 번째 리뷰를 작성해보세요!
           </p>
         ) : (
-          allReviews.map((review) => (
-            <div
-              key={review.reviewId}
-              className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    {review.authorName}
-                  </p>
-                  <div className="flex items-center gap-1 mt-1">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < review.rating
-                            ? 'text-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
+          <>
+            <div className="space-y-4">
+              {allReviews.map((review) => (
+                <div
+                  key={review.reviewId}
+                  className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {review.authorName}
+                      </p>
+                      <div className="flex items-center gap-1 mt-1">
+                        {[...Array(5)].map((_, i) => (
+                          <FaStar
+                            key={i}
+                            className={`w-4 h-4 ${
+                              i < review.rating
+                                ? 'text-yellow-400'
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {new Date(review.createdAt).toLocaleDateString('ko-KR')}
+                    </span>
                   </div>
+                  <p className="text-gray-700 leading-relaxed">
+                    {review.comment}
+                  </p>
                 </div>
-                <span className="text-sm text-gray-500">
-                  {new Date(review.createdAt).toLocaleDateString('ko-KR')}
-                </span>
-              </div>
-              <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+              ))}
             </div>
-          ))
+
+            <div
+              ref={ref}
+              className="h-10"
+            />
+            {isFetchingNextPage && (
+              <p className="text-center">리뷰를 더 불러오는 중...</p>
+            )}
+            {!hasNextPage && allReviews.length > 0 && (
+              <p className="text-center text-gray-500">
+                모든 리뷰를 불러왔습니다.
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

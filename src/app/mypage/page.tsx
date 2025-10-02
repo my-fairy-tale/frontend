@@ -4,13 +4,15 @@ import { userProfileOption } from '../../components/mypage/user-profile-option';
 import UserProfile from '../../components/mypage/user-profile';
 import MyBookList from '@/components/mypage/my-book-list';
 import { myBookOption } from '@/components/mypage/my-book-option';
+import { auth } from '@/auth';
 
 export default async function MyPage() {
   const queryClient = getQueryClient();
+  const session = await auth();
 
   try {
     await Promise.all([
-      queryClient.prefetchQuery(userProfileOption),
+      queryClient.prefetchQuery(userProfileOption(session?.accessToken)),
       queryClient.prefetchInfiniteQuery(myBookOption),
     ]);
   } catch (err) {

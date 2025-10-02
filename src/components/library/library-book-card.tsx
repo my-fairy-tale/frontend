@@ -3,17 +3,38 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
-import { LibraryBooksData } from '@/types/api';
+import { ApiResponse, LibraryBooksData } from '@/types/api';
+import { useSession } from 'next-auth/react';
+import { getQueryClient } from '@/lib/get-query-client';
+import { libraryDetailLikeOption } from './library-detail-like-option';
+import { libraryDetailBookOption } from './library-detail-book-option';
+import { libraryDetailReviewOption } from './library-detail-review-option';
 
 interface LibraryBookCardProps {
   post: LibraryBooksData;
 }
 
 const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
+  const { data: session } = useSession();
+  const queryClient = getQueryClient();
+
+  const handleMouseEnter = () => {
+    if (session?.accessToken) {
+      queryClient.prefetchQuery(
+        libraryDetailLikeOption(post.postId.toString())
+      );
+    }
+    queryClient.prefetchQuery(libraryDetailBookOption(post.postId.toString()));
+    queryClient.prefetchInfiniteQuery(
+      libraryDetailReviewOption(post.postId.toString())
+    );
+  };
+
   return (
     <Link
       href={`/library/${post.postId}`}
       className="group block"
+      onMouseEnter={handleMouseEnter}
     >
       <div className="flex flex-col h-full">
         {/* 썸네일 */}

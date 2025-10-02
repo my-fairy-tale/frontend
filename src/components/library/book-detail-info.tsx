@@ -2,12 +2,15 @@
 
 import Image from 'next/image';
 import { FaStar, FaHeart, FaRegHeart, FaShare } from 'react-icons/fa';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getQueryClient } from '@/lib/get-query-client';
 import { libraryDetailBookOption } from './library-detail-book-option';
+import { libraryDetailLikeOption } from '@/components/library/library-detail-like-option';
 import { bookDetailOption } from '../book/book-detail-option';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { ApiResponse, LikeData } from '@/types/api';
 
 interface BookDetailInfoProps {
   slug: string;
@@ -16,6 +19,7 @@ interface BookDetailInfoProps {
 export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   const [isLiked, setIsLiked] = useState(false);
   const queryClient = getQueryClient();
+  const { data: session } = useSession();
 
   const {
     data: postData,
@@ -23,6 +27,104 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
     isError,
     error,
   } = useQuery(libraryDetailBookOption(slug));
+
+  const {
+    data: likeData,
+    isLoading: isLikeLoading,
+    isError: isLikeError,
+    error: likeError,
+  } = useQuery(libraryDetailLikeOption(slug));
+
+  const { mutate: updateLikeStatus } = useMutation({
+    mutationFn: async ({ postId }: { postId: string }) => {
+      try {
+        if (!session?.accessToken) {
+          throw new Error('인증 정보가 없습니다.');
+        }
+        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/likes`;
+        const response = await fetch(backendUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('좋아요 상태를 업데이트할 수 없습니다.');
+        }
+
+        const data: ApiResponse<LikeData> = await response.json();
+        if (data.code !== 'LIKE_2001') {
+          throw new Error(data?.message || '좋아요 상태 업데이트 실패');
+        }
+
+        return data.data;
+      } catch (err) {
+        console.log('api call failed in parent', err);
+        throw err;
+      }
+    },
+    onMutate: async (variables) => {
+      const { postId } = variables;
+      await queryClient.cancelQueries({
+        queryKey: ['library-detail-like', postId],
+      });
+      const previousData = queryClient.getQueryData<LikeData>([
+        'library-detail-like',
+        postId,
+      ]);
+      queryClient.setQueryData<LikeData>(
+        ['library-detail-like', postId],
+        (oldData) => {
+          if (!oldData) return oldData;
+          if (oldData.isLiked) {
+            return {
+              ...oldData,
+              isLiked: false,
+              likeCount: oldData.likeCount - 1,
+            };
+          }
+          return {
+            ...oldData,
+            isLiked: true,
+            likeCount: oldData.likeCount + 1,
+          };
+        }
+      );
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ['library-detail-like', variables.postId],
+          context.previousData
+        );
+      }
+      console.error('좋아요 상태 업데이트 실패:', err);
+      alert('좋아요 상태 업데이트에 실패했습니다. 다시 시도해주세요.');
+    },
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['library-detail-like', variables.postId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['library-detail-book', variables.postId],
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (likeData) {
+      setIsLiked(likeData.isLiked);
+    }
+  }, [likeData]);
+
+  useEffect(() => {
+    if (likeData) {
+      setIsLiked(likeData.isLiked);
+    }
+  }, [likeData]);
 
   if (isLoading) return <p>책을 불러오는 중 입니다...</p>;
   if (isError) return <p>책을 불러오는데 실패했습니다: {String(error)}</p>;
@@ -33,7 +135,7 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   };
 
   const handleLike = async () => {
-    // TODO: 좋아요 API 호출
+    updateLikeStatus({ postId: slug });
     setIsLiked(!isLiked);
   };
 
@@ -116,7 +218,9 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">페이지:</span>
-                <span className="ml-2 font-semibold text-gray-900">{10}쪽</span>
+                <span className="ml-2 font-semibold text-gray-900">
+                  {postData.book.totalPages}쪽
+                </span>
               </div>
               <div>
                 <span className="text-gray-600">게시일:</span>

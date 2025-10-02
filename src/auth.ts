@@ -118,13 +118,14 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
         return token;
       }
 
-      const refreshToken = await refreshAccessToken(token);
-      if (refreshToken.error) {
-        console.log('refreshToken error', refreshToken);
-        return null;
+      const refreshedToken = await refreshAccessToken(token);
+      if (refreshedToken.error) {
+        console.log('refreshToken error', refreshedToken);
+        // Don't return null - return token with error flag so session can handle it
+        return { ...token, error: 'RefreshAccessTokenError' };
       }
 
-      return refreshToken;
+      return refreshedToken;
     },
     async session({ session, token }) {
       session.user = token.user;

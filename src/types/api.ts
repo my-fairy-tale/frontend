@@ -102,6 +102,8 @@ export interface UserProfileData {
   role: string;
   status: string;
   createdAt: string;
+  canCreateBookToday: boolean;
+  todayBookCreatedAt: string | null;
 }
 
 export interface LibraryBookListData {
@@ -147,6 +149,7 @@ export interface LibraryDetailBookData {
     originalTitle: string;
     thumbnailUrl: string;
     targetAge: number;
+    totalPages: number;
     theme: BookTheme;
     style: BookStyle;
   };
@@ -180,6 +183,13 @@ export interface ReviewData {
   createdAt: string;
   updatedAt: string;
   isMine: boolean;
+}
+
+export interface LikeData {
+  postId: number;
+  isLiked: boolean;
+  likeCount: number;
+  action: string;
 }
 
 export enum BookStatus {

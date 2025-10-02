@@ -18,7 +18,7 @@ const GlobalModal = () => {
       //onClick={closeModal} // 배경 클릭 시 모달 닫기 -> 이게 닫히게 되면 안될거 같음
     >
       <div
-        className="w-full bg-white rounded-[1.25rem] p-6 shadow-xl"
+        className="bg-white rounded-[1.25rem] p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 닫히지 않도록 이벤트 전파 방지
       >
         {modalContent}
