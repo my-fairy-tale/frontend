@@ -4,12 +4,8 @@ import { queryOptions } from '@tanstack/react-query';
 
 const fetchLibraryLikeDetail = async (postId: string) => {
   const session = await auth();
-  if (!session?.accessToken) {
-    throw new Error('인증 정보가 없습니다.');
-  }
-
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/likes/status`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/like/status`,
     {
       method: 'GET',
       headers: {

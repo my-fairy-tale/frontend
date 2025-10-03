@@ -5,12 +5,13 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
-export default function LibraryPage({
+export default async function LibraryPage({
   searchParams,
 }: {
-  searchParams: { sort?: string };
+  searchParams: Promise<{ sort?: string }>;
 }) {
-  const sort = searchParams?.sort || 'latest';
+  const params = await searchParams;
+  const sort = params?.sort || 'latest';
 
   return (
     <main className="max-w-7xl mx-auto p-6 md:p-8 my-8">

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
-import { ApiResponse, LibraryBooksData } from '@/types/api';
+import { LibraryBooksData } from '@/types/api';
 import { useSession } from 'next-auth/react';
 import { getQueryClient } from '@/lib/get-query-client';
 import { libraryDetailLikeOption } from './library-detail-like-option';
@@ -23,11 +23,15 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
       queryClient.prefetchQuery(
         libraryDetailLikeOption(post.postId.toString())
       );
+      queryClient.prefetchInfiniteQuery(
+        libraryDetailReviewOption(post.postId.toString(), session.accessToken)
+      );
+    } else {
+      queryClient.prefetchInfiniteQuery(
+        libraryDetailReviewOption(post.postId.toString())
+      );
     }
     queryClient.prefetchQuery(libraryDetailBookOption(post.postId.toString()));
-    queryClient.prefetchInfiniteQuery(
-      libraryDetailReviewOption(post.postId.toString())
-    );
   };
 
   return (

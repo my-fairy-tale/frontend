@@ -13,7 +13,7 @@ export default async function MyPage() {
   try {
     await Promise.all([
       queryClient.prefetchQuery(userProfileOption(session?.accessToken)),
-      queryClient.prefetchInfiniteQuery(myBookOption),
+      queryClient.prefetchInfiniteQuery(myBookOption(session?.accessToken)),
     ]);
   } catch (err) {
     console.error('userprofile prefetch failed', err);
@@ -22,7 +22,7 @@ export default async function MyPage() {
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <main className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+    <main className="max-w-4xl w-full mx-auto p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl font-bold mb-8 text-gray-900">마이페이지</h1>
 
       <div className="space-y-10">

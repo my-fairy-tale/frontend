@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { useSession } from 'next-auth/react';
+import { myBookOption } from './my-book-option';
 
 // API 호출 함수: pageParam을 인자로 받도록 수정
 export const fetchMyBooks = async ({
@@ -53,27 +54,7 @@ const MyBookList = () => {
     isLoading,
     isError,
     isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['myBooksInfinite'],
-    queryFn: async ({ pageParam = 0 }) => {
-      if (!session?.accessToken) {
-        throw new Error('인증 정보가 없습니다.');
-      }
-      return await fetchMyBooks({
-        pageParam: pageParam,
-        accessToken: session.accessToken,
-      });
-    },
-    initialPageParam: 0, // 첫 페이지는 0번
-    getNextPageParam: (lastPage) => {
-      // 마지막 페이지가 아니라면, 다음 페이지 번호는 현재 페이지 번호 + 1
-      if (!lastPage.isLast) {
-        return lastPage.currentPage + 1;
-      }
-      // 마지막 페이지라면 undefined를 반환하여 더 이상 페이지가 없음을 알림
-      return undefined;
-    },
-  });
+  } = useInfiniteQuery(myBookOption(session?.accessToken));
 
   const { ref, inView } = useInView({
     threshold: 0.5, // 요소가 50% 보이면 콜백 실행
