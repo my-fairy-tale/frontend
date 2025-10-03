@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { FaTrash } from 'react-icons/fa';
 import useModalStore from '@/store/use-modal-store';
 import MyBookDeleteModal from '@/components/ui/modal/mybook-delete-modal';
+import Image from 'next/image';
 
 interface BookThumbnailProps {
   id: string;
@@ -24,7 +25,7 @@ const BookThumbnail = ({
   thumbnailUrl,
   title,
   isPublic: initialIsPublic,
-  onStatusChange = (bookID, stauts) => {},
+  onStatusChange = () => {},
   onDelete,
   showStatusButtons = true,
 }: BookThumbnailProps) => {
@@ -121,9 +122,10 @@ const BookThumbnail = ({
         href={`/books/${id}`}
       >
         <div className="relative">
-          <img
+          <Image
             src={thumbnailUrl || '/book_placeholder.jpg'}
             alt={title}
+            fill
             className="w-full h-48 object-cover"
           />
           {/* 공개/비공개 상태 뱃지 */}

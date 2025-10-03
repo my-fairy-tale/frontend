@@ -28,12 +28,7 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
     error,
   } = useQuery(libraryDetailBookOption(slug));
 
-  const {
-    data: likeData,
-    isLoading: isLikeLoading,
-    isError: isLikeError,
-    error: likeError,
-  } = useQuery(libraryDetailLikeOption(slug));
+  const { data: likeData } = useQuery(libraryDetailLikeOption(slug));
 
   const { mutate: updateLikeStatus } = useMutation({
     mutationFn: async ({ postId }: { postId: string }) => {

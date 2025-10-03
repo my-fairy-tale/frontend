@@ -11,6 +11,7 @@ import {
 } from '@tanstack/react-query';
 import { libraryDetailReviewOption } from './library-detail-review-option';
 import { useInView } from 'react-intersection-observer';
+import { ReviewData } from '@/types/api';
 
 interface BookReviewsProps {
   slug: string;
@@ -192,7 +193,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
     });
   };
 
-  const startEditing = (review: any) => {
+  const startEditing = (review: ReviewData) => {
     setIsEditing(true);
     setEditRating(review.rating);
     setEditComment(review.comment);

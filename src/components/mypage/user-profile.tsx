@@ -18,12 +18,7 @@ const UserProfile = () => {
     isError,
     error,
   } = useQuery(userProfileOption(session?.accessToken));
-  const {
-    user: storedUser,
-    setUser,
-    updateUserName,
-    updateUserPhoneNumber,
-  } = useUserStore();
+  const { user: storedUser, setUser } = useUserStore();
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
   const [newPhoneNumber, setNewPhoneNumber] = useState('');
@@ -86,7 +81,7 @@ const UserProfile = () => {
       alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
       setIsEditing(true);
     },
-    onSettled: (data, error) => {
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: userProfileOption(session?.accessToken).queryKey,
       });

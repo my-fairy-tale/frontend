@@ -1,4 +1,3 @@
-import { auth } from '@/auth';
 import { ApiResponse, MyBooksData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 

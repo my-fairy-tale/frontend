@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import Image from 'next/image';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchMyBooks } from '../mypage/my-book-list';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CreatePostForm() {
   const router = useRouter();
@@ -14,7 +15,6 @@ export default function CreatePostForm() {
 
   const {
     data: myBooks,
-    error,
     fetchNextPage,
     hasNextPage,
     isLoading,
@@ -152,12 +152,12 @@ export default function CreatePostForm() {
         ) : allBooks.length === 0 ? (
           <div className="text-center py-10 bg-gray-50 rounded-lg">
             <p className="text-gray-600 mb-4">아직 만든 책이 없습니다.</p>
-            <a
+            <Link
               href="/books/create"
               className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               동화책 만들기
-            </a>
+            </Link>
           </div>
         ) : (
           <>
@@ -178,10 +178,10 @@ export default function CreatePostForm() {
                       : 'border-transparent hover:border-gray-300'
                   }`}
                 >
-                  <img
+                  <Image
                     src={book.thumbnailUrl}
                     alt={book.title}
-                    //fill
+                    fill
                     className="object-cover"
                   />
                   {selectedBookId === book.id && (

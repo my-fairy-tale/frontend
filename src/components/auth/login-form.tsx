@@ -25,7 +25,7 @@ function LoginButton() {
 
 export default function LoginForm() {
   const [message, dispatch] = useActionState(loginAction, undefined);
-  const { data: session, update } = useSession();
+  const { update } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function LoginForm() {
         router.push('/');
       });
     }
-  }, [message, router]);
+  }, [message, router, update]);
 
   const errorMessage = message && message !== 'SUCCESS' ? message : undefined;
 
