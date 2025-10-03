@@ -3,7 +3,9 @@
 import { useFormStatus } from 'react-dom';
 import { loginAction } from '@/lib/server-action';
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 // 제출 버튼을 위한 별도 컴포넌트 (useFormStatus 훅 사용)
 function LoginButton() {
@@ -22,7 +24,19 @@ function LoginButton() {
 }
 
 export default function LoginForm() {
-  const [errorMessage, dispatch] = useActionState(loginAction, undefined);
+  const [message, dispatch] = useActionState(loginAction, undefined);
+  const { update } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (message === 'SUCCESS') {
+      update().then(() => {
+        router.push('/');
+      });
+    }
+  }, [message, router, update]);
+
+  const errorMessage = message && message !== 'SUCCESS' ? message : undefined;
 
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">

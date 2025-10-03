@@ -1,4 +1,4 @@
-import BookThumbnail from '@/components/book/book-thumbnail';
+import BookThumbnail from '@/components/mypage/book-thumbnail';
 import Link from 'next/link';
 
 // 예시 데이터: 실제로는 DB에서 동화책 목록을 가져와야 합니다.

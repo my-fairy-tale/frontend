@@ -6,6 +6,7 @@ import Footer from '@/components/layout/footer';
 import GlobalModal from '@/components/ui/modal/global-modal';
 import ReactQueryProvider from '@/components/provider/react-query-provider';
 import AuthProvider from '@/components/provider/auth-provider';
+import { auth } from '@/auth';
 
 export const metadata: Metadata = {
   title: 'my fairy tale',
@@ -18,15 +19,17 @@ const pretendard = localFont({
   weight: '45 920',
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en">
       <body className="flex flex-col h-screen antialiased">
-        <AuthProvider>
+        <AuthProvider session={session}>
           <ReactQueryProvider>
             <Header />
             {children}

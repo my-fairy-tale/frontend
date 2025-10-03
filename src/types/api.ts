@@ -102,6 +102,94 @@ export interface UserProfileData {
   role: string;
   status: string;
   createdAt: string;
+  canCreateBookToday: boolean;
+  todayBookCreatedAt: string | null;
+}
+
+export interface LibraryBookListData {
+  posts: LibraryBooksData[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+export interface LibraryBooksData {
+  postId: number;
+  title: string;
+  content: string;
+  authorName: string;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
+  book: {
+    bookId: string;
+    originalTitle: string;
+    thumbnailUrl: string;
+    targetAge: number;
+    theme: string;
+    style: string;
+  };
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface LibraryDetailBookData {
+  postId: number;
+  title: string;
+  content: string;
+  authorName: string;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
+  book: {
+    bookId: string;
+    originalTitle: string;
+    thumbnailUrl: string;
+    targetAge: number;
+    totalPages: number;
+    theme: BookTheme;
+    style: BookStyle;
+  };
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface ReviewListData {
+  bookInfo: {
+    bookId: string;
+    title: string;
+    averageRating: number;
+    reviewCount: number;
+  };
+  reviews: ReviewData[];
+  pageInfo: {
+    totalElements: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
+    isFirst: boolean;
+    isLast: boolean;
+  };
+}
+export interface ReviewData {
+  reviewId: number;
+  rating: number;
+  comment: string;
+  authorName: string;
+  isAnonymous: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isMine: boolean;
+}
+
+export interface LikeData {
+  postId: number;
+  isLiked: boolean;
+  likeCount: number;
+  action: string;
 }
 
 export enum BookStatus {
