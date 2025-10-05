@@ -30,6 +30,7 @@ async function refreshAccessToken(token: JWT) {
       accessTokenExpiresIn: Date.now() + data.data.accessTokenExpiresIn * 1000,
       // 백엔드가 새 refresh token을 주면 업데이트, 아니면 기존 것 유지
       refreshToken: (data.data.refreshToken as string) ?? token.refreshToken,
+      error: undefined,
     };
   } catch (error) {
     console.error('RefreshAccessTokenError', error);

@@ -31,10 +31,11 @@ export default function LoginForm() {
   useEffect(() => {
     if (message === 'SUCCESS') {
       update().then(() => {
-        router.push('/');
+        router.push('/mypage');
       });
     }
-  }, [message, router, update]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message]);
 
   const errorMessage = message && message !== 'SUCCESS' ? message : undefined;
 

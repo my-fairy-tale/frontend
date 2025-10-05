@@ -104,6 +104,8 @@ export interface UserProfileData {
   createdAt: string;
   canCreateBookToday: boolean;
   todayBookCreatedAt: string | null;
+  voicePreference: string;
+  ttsSpeed: number;
 }
 
 export interface LibraryBookListData {
