@@ -1,31 +1,28 @@
 'use client';
 
-import { useState } from 'react';
 import { signOut } from 'next-auth/react';
+import useModalStore from '@/store/use-modal-store';
+import UserWithdrawModal from '@/components/ui/modal/user-withdraw-modal';
 
 interface AccountSettingsProps {
   accessToken?: string;
 }
 
 const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
+  const { openModal, closeModal } = useModalStore();
 
-  const handleWithdraw = async () => {
-    const confirmed = confirm(
-      '정말로 회원 탈퇴하시겠습니까?\n\n모든 데이터가 삭제되며 복구할 수 없습니다.'
+  const handleWithdrawClick = () => {
+    openModal(
+      <UserWithdrawModal
+        onConfirm={handleWithdrawConfirm}
+        onCancel={closeModal}
+      />,
+      { size: 'lg' }
     );
+  };
 
-    if (!confirmed) return;
-
-    const doubleConfirm = confirm(
-      '마지막 확인입니다.\n\n탈퇴하시면 모든 동화책과 데이터가 영구적으로 삭제됩니다.'
-    );
-
-    if (!doubleConfirm) return;
-
+  const handleWithdrawConfirm = async () => {
     try {
-      setIsDeleting(true);
-
       if (!accessToken) {
         throw new Error('인증 정보가 없습니다.');
       }
@@ -45,6 +42,7 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
         throw new Error('회원 탈퇴에 실패했습니다.');
       }
 
+      closeModal();
       alert('회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
 
       // Sign out and redirect to home
@@ -52,8 +50,7 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
     } catch (error) {
       console.error('회원 탈퇴 실패:', error);
       alert('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsDeleting(false);
+      throw error;
     }
   };
 
@@ -66,15 +63,10 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
           회원 탈퇴 시 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
         </p>
         <button
-          onClick={handleWithdraw}
-          disabled={isDeleting}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            isDeleting
-              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-              : 'bg-red-600 text-white hover:bg-red-700'
-          }`}
+          onClick={handleWithdrawClick}
+          className="px-4 py-2 rounded-lg font-medium transition-colors bg-red-600 text-white hover:bg-red-700"
         >
-          {isDeleting ? '처리 중...' : '회원 탈퇴'}
+          회원 탈퇴
         </button>
       </div>
     </section>

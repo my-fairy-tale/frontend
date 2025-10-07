@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { FaStar, FaHeart, FaRegHeart, FaShare } from 'react-icons/fa';
+import { FaStar, FaHeart, FaRegHeart, FaShare, FaTrash } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getQueryClient } from '@/lib/get-query-client';
@@ -11,6 +11,10 @@ import { bookDetailOption } from '../book/book-detail-option';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { ApiResponse, LikeData } from '@/types/api';
+import useUserStore from '@/store/use-user-store';
+import useModalStore from '@/store/use-modal-store';
+import { useRouter } from 'next/navigation';
+import DeletePostModal from '@/components/ui/modal/delete-post-modal';
 
 interface BookDetailInfoProps {
   slug: string;
@@ -18,8 +22,12 @@ interface BookDetailInfoProps {
 
 export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   const [isLiked, setIsLiked] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const queryClient = getQueryClient();
   const { data: session } = useSession();
+  const { user } = useUserStore();
+  const { openModal, closeModal } = useModalStore();
+  const router = useRouter();
 
   const {
     data: postData,
@@ -28,7 +36,9 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
     error,
   } = useQuery(libraryDetailBookOption(slug));
 
-  const { data: likeData } = useQuery(libraryDetailLikeOption(slug));
+  const { data: likeData } = useQuery(
+    libraryDetailLikeOption(slug, session?.accessToken)
+  );
 
   const { mutate: updateLikeStatus } = useMutation({
     mutationFn: async ({ postId }: { postId: string }) => {
@@ -115,12 +125,6 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
     }
   }, [likeData]);
 
-  useEffect(() => {
-    if (likeData) {
-      setIsLiked(likeData.isLiked);
-    }
-  }, [likeData]);
-
   if (isLoading) return <p>책을 불러오는 중 입니다...</p>;
   if (isError) return <p>책을 불러오는데 실패했습니다: {String(error)}</p>;
   if (!postData) return <p>책을 찾을 수 없습니다.</p>;
@@ -148,6 +152,53 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
       alert('링크가 복사되었습니다!');
     }
   };
+
+  const handleDeleteClick = () => {
+    openModal(
+      <DeletePostModal
+        title={postData.book.originalTitle}
+        onConfirm={handleDeleteConfirm}
+        onCancel={closeModal}
+      />,
+      { size: 'sm' }
+    );
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      setIsDeleting(true);
+
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('게시글 삭제에 실패했습니다.');
+      }
+
+      closeModal();
+      alert('게시글이 삭제되었습니다.');
+      router.push('/library');
+    } catch (error) {
+      console.error('게시글 삭제 실패:', error);
+      alert('게시글 삭제에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const isAuthor = user && postData && user.id === postData.authorId;
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
@@ -189,7 +240,9 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
             <div className="flex items-center gap-2">
               <FaStar className="text-yellow-400 w-6 h-6" />
               <span className="text-2xl font-bold text-gray-900">
-                {postData.averageRating.toFixed(1)}
+                {postData.averageRating
+                  ? postData.averageRating.toFixed(1)
+                  : '0'}
               </span>
               <span className="text-gray-600">
                 ({postData.reviewCount} 리뷰)
@@ -247,6 +300,17 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
               <FaShare />
               공유하기
             </button>
+
+            {isAuthor && (
+              <button
+                onClick={handleDeleteClick}
+                disabled={isDeleting}
+                className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FaTrash />
+                삭제
+              </button>
+            )}
           </div>
         </div>
       </div>

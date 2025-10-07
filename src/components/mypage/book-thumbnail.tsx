@@ -96,7 +96,8 @@ const BookThumbnail = ({
         title={title}
         onConfirm={handleConfirmDelete}
         isLoading={isLoading}
-      />
+      />,
+      { size: 'sm' }
     );
   };
 

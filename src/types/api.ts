@@ -134,7 +134,7 @@ export interface LibraryBooksData {
     theme: string;
     style: string;
   };
-  averageRating: number;
+  averageRating?: number;
   reviewCount: number;
 }
 
@@ -142,6 +142,7 @@ export interface LibraryDetailBookData {
   postId: number;
   title: string;
   content: string;
+  authorId: number;
   authorName: string;
   viewCount: number;
   likeCount: number;
@@ -155,7 +156,7 @@ export interface LibraryDetailBookData {
     theme: BookTheme;
     style: BookStyle;
   };
-  averageRating: number;
+  averageRating?: number;
   reviewCount: number;
 }
 
@@ -181,10 +182,10 @@ export interface ReviewData {
   rating: number;
   comment: string;
   authorName: string;
+  reviewerId: number;
   isAnonymous: boolean;
   createdAt: string;
   updatedAt: string;
-  isMine: boolean;
 }
 
 export interface LikeData {

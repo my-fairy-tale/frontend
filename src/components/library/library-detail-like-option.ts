@@ -1,16 +1,17 @@
-import { auth } from '@/auth';
 import { ApiResponse, LikeData } from '@/types/api';
 import { queryOptions } from '@tanstack/react-query';
 
-const fetchLibraryLikeDetail = async (postId: string) => {
-  const session = await auth();
+const fetchLibraryLikeDetail = async (postId: string, accessToken?: string) => {
+  if (accessToken === undefined) {
+    throw new Error('인증이 없습니다.');
+  }
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/like/status`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/likes/status`,
     {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session?.accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     }
   );
@@ -28,10 +29,13 @@ const fetchLibraryLikeDetail = async (postId: string) => {
   throw new Error(data?.message || '좋아요를 불러올 수 없음.');
 };
 
-export const libraryDetailLikeOption = (postId: string) => {
+export const libraryDetailLikeOption = (
+  postId: string,
+  accessToken?: string
+) => {
   return queryOptions({
     queryKey: ['library-detail-like', postId],
-    queryFn: async () => fetchLibraryLikeDetail(postId),
+    queryFn: async () => fetchLibraryLikeDetail(postId, accessToken),
     staleTime: 5 * 60 * 1000, // 5분
   });
 };

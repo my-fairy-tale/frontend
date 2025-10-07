@@ -97,6 +97,25 @@ const UserProfile = () => {
     return <p>사용자 정보를 불러오는데 실패했습니다: {String(error)}</p>;
   if (!user) return <p>사용자 정보를 찾을 수 없습니다.</p>;
 
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const numbers = value.replace(/\D/g, '');
+
+    // Format: 010-1234-5678
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setNewPhoneNumber(formatted);
+  };
+
   const handleEditClick = () => {
     setNewName(user.name);
     setNewPhoneNumber(user.phoneNumber || '');
@@ -158,9 +177,10 @@ const UserProfile = () => {
                   <input
                     type="tel"
                     value={newPhoneNumber}
-                    onChange={(e) => setNewPhoneNumber(e.target.value)}
+                    onChange={handlePhoneChange}
+                    placeholder="010-1234-5678"
+                    maxLength={13}
                     className="text-md text-gray-700 border-b-2 border-blue-500 focus:outline-none w-full"
-                    placeholder="전화번호를 입력하세요"
                   />
                   <div className="flex space-x-2">
                     <button

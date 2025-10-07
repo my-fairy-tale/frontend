@@ -1,5 +1,4 @@
 import { UserProfileData } from '@/types/api';
-import { stat } from 'fs';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
