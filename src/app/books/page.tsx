@@ -1,3 +1,4 @@
+import CreateBookButton from '@/components/book/create-book-button';
 import BookThumbnail from '@/components/mypage/book-thumbnail';
 import Link from 'next/link';
 
@@ -37,12 +38,7 @@ const BooksPage = () => {
       </p>
 
       <div className="my-10">
-        <Link
-          href="/books/create"
-          className="inline-block text-lg py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105"
-        >
-          + 새 동화책 만들러 가기
-        </Link>
+        <CreateBookButton />
       </div>
 
       <hr className="my-12" />

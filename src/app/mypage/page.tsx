@@ -5,6 +5,7 @@ import UserProfile from '../../components/mypage/user-profile';
 import MyBookList from '@/components/mypage/my-book-list';
 import { myBookOption } from '@/components/mypage/my-book-option';
 import { auth } from '@/auth';
+import AccountSettings from '@/components/mypage/account-settings';
 
 export default async function MyPage() {
   const queryClient = getQueryClient();
@@ -30,6 +31,7 @@ export default async function MyPage() {
           <UserProfile />
           <MyBookList />
         </HydrationBoundary>
+        <AccountSettings accessToken={session?.accessToken} />
       </div>
     </main>
   );

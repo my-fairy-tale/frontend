@@ -24,7 +24,7 @@ const MyBookDeleteModal = ({
   };
 
   return (
-    <div className="bg-white p-6 max-w-sm">
+    <div className="p-6">
       <h3 className="text-lg font-bold text-gray-900 mb-2">책 삭제 확인</h3>
       <p className="text-gray-700 mb-6">
         &quot;{title}&quot;을(를) 삭제하시겠습니까?

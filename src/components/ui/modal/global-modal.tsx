@@ -2,23 +2,39 @@
 'use client';
 
 import React from 'react';
-import useModalStore from '@/store/use-modal-store';
+import useModalStore, { ModalSize } from '@/store/use-modal-store';
+
+const sizeClasses: Record<ModalSize, string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-xl',
+  full: 'max-w-full mx-4',
+};
 
 const GlobalModal = () => {
   // 스토어에서 상태와 액션을 가져옵니다.
-  const { isOpen, modalContent } = useModalStore();
+  const { isOpen, modalContent, modalOptions, closeModal } = useModalStore();
 
   if (!isOpen) {
     return null; // 모달이 닫혀 있으면 아무것도 렌더링하지 않습니다.
   }
 
+  const handleBackdropClick = () => {
+    if (modalOptions.closeOnBackdropClick) {
+      closeModal();
+    }
+  };
+
+  const sizeClass = sizeClasses[modalOptions.size || 'md'];
+
   return (
     <div
       className="w-full fixed px-8 inset-0 bg-black/50 flex justify-center items-center z-50"
-      //onClick={closeModal} // 배경 클릭 시 모달 닫기 -> 이게 닫히게 되면 안될거 같음
+      onClick={handleBackdropClick}
     >
       <div
-        className="bg-white rounded-[1.25rem] p-6 shadow-xl"
+        className={`bg-white rounded-lg shadow-xl w-full ${sizeClass}`}
         onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 닫히지 않도록 이벤트 전파 방지
       >
         {modalContent}

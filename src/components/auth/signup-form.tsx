@@ -3,7 +3,7 @@
 import { useFormStatus } from 'react-dom';
 import { signUpAction } from '@/lib/server-action';
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 
 function SignUpButton() {
   const { pending } = useFormStatus();
@@ -20,6 +20,26 @@ function SignUpButton() {
 
 export default function SignUpForm() {
   const [errorMessage, dispatch] = useActionState(signUpAction, undefined);
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const numbers = value.replace(/\D/g, '');
+
+    // Format: 010-1234-5678
+    if (numbers.length <= 3) {
+      return numbers;
+    } else if (numbers.length <= 7) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+    } else {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+    }
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+  };
 
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
@@ -64,6 +84,10 @@ export default function SignUpForm() {
             id="tel"
             type="tel"
             name="tel"
+            value={phoneNumber}
+            onChange={handlePhoneChange}
+            placeholder="010-1234-5678"
+            maxLength={13}
             required
             className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />

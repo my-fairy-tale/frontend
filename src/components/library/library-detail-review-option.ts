@@ -1,18 +1,13 @@
 import { ApiResponse, ReviewListData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 
-const fetchLibraryReviewDetail = async (
-  postId: string,
-  pageParam: number,
-  accessToken?: string
-) => {
+const fetchLibraryReviewDetail = async (postId: string, pageParam: number) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/reviews?page=${pageParam}&size=4`,
     {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
     }
   );
@@ -30,14 +25,11 @@ const fetchLibraryReviewDetail = async (
   throw new Error(data?.message || '책을 찾을 수 없습니다.');
 };
 
-export const libraryDetailReviewOption = (
-  postId: string,
-  accessToken?: string
-) => {
+export const libraryDetailReviewOption = (postId: string) => {
   return infiniteQueryOptions({
     queryKey: ['library-detail-review', postId],
     queryFn: async ({ pageParam = 0 }) =>
-      fetchLibraryReviewDetail(postId, pageParam, accessToken),
+      fetchLibraryReviewDetail(postId, pageParam),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       if (!lastPage.pageInfo.isLast) {

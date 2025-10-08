@@ -14,7 +14,6 @@ export default function AuthProvider({
     <SessionProvider
       session={session}
       refetchInterval={5 * 60}
-      refetchOnWindowFocus={true}
     >
       {children}
     </SessionProvider>

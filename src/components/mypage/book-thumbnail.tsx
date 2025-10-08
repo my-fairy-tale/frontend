@@ -96,7 +96,8 @@ const BookThumbnail = ({
         title={title}
         onConfirm={handleConfirmDelete}
         isLoading={isLoading}
-      />
+      />,
+      { size: 'sm' }
     );
   };
 
@@ -121,12 +122,12 @@ const BookThumbnail = ({
         onMouseEnter={handleMouseEnter}
         href={`/books/${id}`}
       >
-        <div className="relative">
+        <div className="relative h-48">
           <Image
             src={thumbnailUrl || '/book_placeholder.jpg'}
             alt={title}
             fill
-            className="w-full h-48 object-cover"
+            className="object-cover"
           />
           {/* 공개/비공개 상태 뱃지 */}
           <span

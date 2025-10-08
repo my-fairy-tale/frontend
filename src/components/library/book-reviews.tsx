@@ -12,6 +12,7 @@ import {
 import { libraryDetailReviewOption } from './library-detail-review-option';
 import { useInView } from 'react-intersection-observer';
 import { ReviewData } from '@/types/api';
+import useUserStore from '@/store/use-user-store';
 
 interface BookReviewsProps {
   slug: string;
@@ -20,6 +21,7 @@ interface BookReviewsProps {
 export default function BookReviews({ slug }: BookReviewsProps) {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
+  const { user } = useUserStore();
 
   const [isWriting, setIsWriting] = useState(false);
   const [newRating, setNewRating] = useState(5);
@@ -38,7 +40,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
     isLoading,
     isError,
     isFetchingNextPage,
-  } = useInfiniteQuery(libraryDetailReviewOption(slug, session?.accessToken));
+  } = useInfiniteQuery(libraryDetailReviewOption(slug));
 
   const { mutate: submitReview } = useMutation({
     mutationFn: async ({
@@ -329,7 +331,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
                   key={review.reviewId}
                   className="border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
                 >
-                  {isEditing && review.isMine ? (
+                  {isEditing && review.reviewerId === user?.id ? (
                     <form onSubmit={handleEditReview}>
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -409,7 +411,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
                               'ko-KR'
                             )}
                           </span>
-                          {review.isMine && (
+                          {review.reviewerId === user?.id && (
                             <button
                               onClick={() => startEditing(review)}
                               className="text-sm text-blue-600 hover:text-blue-800 font-semibold"
