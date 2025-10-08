@@ -5,20 +5,7 @@ import useUserStore from '@/store/use-user-store';
 import { ApiResponse, UserProfileData } from '@/types/api';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
-
-const VOICE_MODELS = [
-  { id: 'alloy', name: 'Alloy' },
-  { id: 'echo', name: 'Echo' },
-  { id: 'fable', name: 'Fable' },
-  { id: 'onyx', name: 'Onyx' },
-  { id: 'nova', name: 'Nova' },
-  { id: 'shimmer', name: 'Shimmer' },
-  { id: 'ash', name: 'Ash' },
-  { id: 'ballad', name: 'Ballad' },
-  { id: 'coral', name: 'Coral' },
-  { id: 'sage', name: 'Sage' },
-  { id: 'verse', name: 'Verse' },
-];
+import { VOICE_MODELS } from '@/lib/voice-models';
 
 const ChoosePreferenceVoice = ({
   voiceModel,

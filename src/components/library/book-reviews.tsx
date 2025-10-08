@@ -40,7 +40,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
     isLoading,
     isError,
     isFetchingNextPage,
-  } = useInfiniteQuery(libraryDetailReviewOption(slug, session?.accessToken));
+  } = useInfiniteQuery(libraryDetailReviewOption(slug));
 
   const { mutate: submitReview } = useMutation({
     mutationFn: async ({

@@ -2,6 +2,7 @@
 
 import { signOut } from 'next-auth/react';
 import useModalStore from '@/store/use-modal-store';
+import useUserStore from '@/store/use-user-store';
 import UserWithdrawModal from '@/components/ui/modal/user-withdraw-modal';
 
 interface AccountSettingsProps {
@@ -10,6 +11,7 @@ interface AccountSettingsProps {
 
 const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
   const { openModal, closeModal } = useModalStore();
+  const { clearUser } = useUserStore();
 
   const handleWithdrawClick = () => {
     openModal(
@@ -44,6 +46,9 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
 
       closeModal();
       alert('회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
+
+      // Clear user store before signing out
+      clearUser();
 
       // Sign out and redirect to home
       await signOut({ callbackUrl: '/' });

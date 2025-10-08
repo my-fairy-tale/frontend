@@ -8,10 +8,17 @@ import { ApiResponse, CreateBookData, CreateBookPageProps } from '@/types/api';
 import apiFetch from '@/lib/api';
 import Notification from '@/components/ui/notification';
 import { useSession } from 'next-auth/react';
+import useUserStore from '@/store/use-user-store';
+import { VOICE_MODELS } from '@/lib/voice-models';
 
 export default function CreateBookForm() {
   const { data: session } = useSession();
+  const { user } = useUserStore();
   const [formData, setFormData] = useState({ title: '', story: '' });
+  const [voiceModel, setVoiceModel] = useState(
+    user?.voicePreference || VOICE_MODELS[0].id
+  );
+  const [ttsSpeed, setTtsSpeed] = useState(user?.ttsSpeed || 1.0);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: '' });
   const router = useRouter();
@@ -34,6 +41,8 @@ export default function CreateBookForm() {
       targetAge: 5,
       theme: 'ADVENTURE',
       style: 'CARTOON',
+      voiceModel,
+      ttsSpeed,
     };
 
     try {
@@ -115,6 +124,52 @@ export default function CreateBookForm() {
         <p className="text-gray-500 text-sm mt-2">
           엔터(Enter) 두 번으로 페이지를 나눌 수 있어요.
         </p>
+      </div>
+
+      <div className="mb-6">
+        <label
+          htmlFor="voice-model"
+          className="block text-lg font-medium text-gray-700 mb-2"
+        >
+          음성 모델
+        </label>
+        <select
+          id="voice-model"
+          value={voiceModel}
+          onChange={(e) => setVoiceModel(e.target.value)}
+          className="w-full p-3 text-base border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-gray-100"
+          disabled={isLoading}
+        >
+          {VOICE_MODELS.map((voice) => (
+            <option key={voice.id} value={voice.id}>
+              {voice.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mb-6">
+        <label
+          htmlFor="tts-speed"
+          className="block text-lg font-medium text-gray-700 mb-2"
+        >
+          음성 속도: {ttsSpeed.toFixed(1)}x
+        </label>
+        <input
+          id="tts-speed"
+          type="range"
+          min="0.5"
+          max="2.0"
+          step="0.1"
+          value={ttsSpeed}
+          onChange={(e) => setTtsSpeed(parseFloat(e.target.value))}
+          className="w-full"
+          disabled={isLoading}
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0.5x</span>
+          <span>2.0x</span>
+        </div>
       </div>
 
       <button

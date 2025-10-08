@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: refactor modal system and add post deletion functionality\n\n- Refactor global modal to support custom sizes (sm, md, lg, xl, full)\n- Add modal options for size and backdrop click behavior\n- Create custom UserWithdrawModal with two-step confirmation\n- Create DeletePostModal for post deletion confirmation\n- Add phone number auto-formatting in signup and profile edit\n- Add post deletion feature for authors in library detail page\n- Fix review edit permission check to use reviewerId instead of isMine\n- Fix like status API endpoint and add authentication\n- Update API types: add authorId, reviewerId, make averageRating optional\n- Remove unused imports and clean up code\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

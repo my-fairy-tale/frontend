@@ -21,6 +21,8 @@ export interface CreateBookPageProps {
   targetAge: number;
   theme: string;
   style: string;
+  voiceModel?: string;
+  ttsSpeed?: number;
 }
 
 export interface CreateBookData {

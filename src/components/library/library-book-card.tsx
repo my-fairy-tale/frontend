@@ -23,14 +23,10 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
       queryClient.prefetchQuery(
         libraryDetailLikeOption(post.postId.toString(), session.accessToken)
       );
-      queryClient.prefetchInfiniteQuery(
-        libraryDetailReviewOption(post.postId.toString(), session.accessToken)
-      );
-    } else {
-      queryClient.prefetchInfiniteQuery(
-        libraryDetailReviewOption(post.postId.toString())
-      );
     }
+    queryClient.prefetchInfiniteQuery(
+      libraryDetailReviewOption(post.postId.toString())
+    );
     queryClient.prefetchQuery(libraryDetailBookOption(post.postId.toString()));
   };
 
@@ -64,7 +60,7 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
           <div className="flex items-center gap-1 mt-auto">
             <FaStar className="text-yellow-400 w-4 h-4" />
             <span className="text-sm font-semibold text-gray-900">
-              {post.averageRating ? post.averageRating.toFixed(1) : '0'}
+              {post.averageRating ? post.averageRating.toFixed(1) : '0.0'}
             </span>
             <span className="text-xs text-gray-500">({post.reviewCount})</span>
           </div>

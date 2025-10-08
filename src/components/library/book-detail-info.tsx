@@ -134,6 +134,10 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   };
 
   const handleLike = async () => {
+    if (!session?.accessToken) {
+      alert('좋아요를 하려면 로그인이 필요합니다.');
+      return;
+    }
     updateLikeStatus({ postId: slug });
     setIsLiked(!isLiked);
   };
