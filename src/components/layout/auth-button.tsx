@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { logoutAction } from '@/lib/server-action';
+import { useSession, signOut } from 'next-auth/react';
 import useUserStore from '@/store/use-user-store';
 import { Session } from 'next-auth';
 
@@ -20,7 +19,7 @@ export default function AuthButton({ initialSession }: AuthButtonProps) {
 
   const handleLogout = async () => {
     clearUser();
-    await logoutAction();
+    await signOut({ callbackUrl: '/auth/login' });
   };
 
   if (status === 'loading' && !initialSession) {
