@@ -4,8 +4,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ApiResponse, CreateBookData, CreateBookPageProps } from '@/types/api';
-import apiFetch from '@/lib/api';
+import {
+  ApiResponse,
+  CreateBookData,
+  CreateBookPageProps,
+  BookTheme,
+  BookStyle,
+  BookThemeLabels,
+  BookStyleLabels,
+} from '@/types/api';
 import Notification from '@/components/ui/notification';
 import { useSession } from 'next-auth/react';
 import useUserStore from '@/store/use-user-store';
@@ -15,6 +22,9 @@ export default function CreateBookForm() {
   const { data: session } = useSession();
   const { user } = useUserStore();
   const [formData, setFormData] = useState({ title: '', story: '' });
+  const [targetAge, setTargetAge] = useState(7);
+  const [theme, setTheme] = useState<BookTheme>(BookTheme.ADVENTURE);
+  const [style, setStyle] = useState<BookStyle>(BookStyle.CARTOON);
   const [voiceModel, setVoiceModel] = useState(
     user?.voicePreference || VOICE_MODELS[0].id
   );
@@ -38,24 +48,35 @@ export default function CreateBookForm() {
     const body: CreateBookPageProps = {
       title: formData.title, // title 추가
       originalText: formData.story,
-      targetAge: 5,
-      theme: 'ADVENTURE',
-      style: 'CARTOON',
+      targetAge,
+      theme,
+      style,
       voiceModel,
       ttsSpeed,
     };
 
     try {
-      const response = await apiFetch<ApiResponse<CreateBookData>>(
-        '/api/v1/books/generate',
-        {
-          method: 'POST',
-          body: JSON.stringify(body),
-        },
-        session?.accessToken
-      );
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
+      }
 
-      if (response?.code === 'BOOK_2001' && response.data) {
+      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/generate`;
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error('책 생성에 실패하였습니다.');
+      }
+
+      const data: ApiResponse<CreateBookData> = await response.json();
+
+      if (data?.code === 'BOOK_2001' && data.data) {
         setNotification({
           message:
             '나만의 동화책이 만들어지고 있어요! 잠시 후 마이페이지에서 확인해주세요.',
@@ -63,7 +84,7 @@ export default function CreateBookForm() {
         });
         setTimeout(() => router.push('/mypage'), 2000); // 2초 후 페이지 이동
       } else {
-        throw new Error(response?.message || '알 수 없는 오류가 발생했습니다.');
+        throw new Error(data?.message || '알 수 없는 오류가 발생했습니다.');
       }
     } catch (error) {
       setNotification({
@@ -77,13 +98,6 @@ export default function CreateBookForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      {notification.message && (
-        <Notification
-          message={notification.message}
-          type={notification.type as 'success' | 'error'}
-        />
-      )}
-
       <div className="mb-6">
         <label
           htmlFor="title"
@@ -128,6 +142,80 @@ export default function CreateBookForm() {
 
       <div className="mb-6">
         <label
+          htmlFor="targetAge"
+          className="block text-lg font-medium text-gray-700 mb-2"
+        >
+          대상 연령: {targetAge}세
+        </label>
+        <input
+          id="targetAge"
+          type="range"
+          min="3"
+          max="12"
+          step="1"
+          value={targetAge}
+          onChange={(e) => setTargetAge(parseInt(e.target.value))}
+          className="w-full"
+          disabled={isLoading}
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>3세</span>
+          <span>12세</span>
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <label
+          htmlFor="theme"
+          className="block text-lg font-medium text-gray-700 mb-2"
+        >
+          테마
+        </label>
+        <select
+          id="theme"
+          value={theme}
+          onChange={(e) => setTheme(e.target.value as BookTheme)}
+          className="w-full p-3 text-base border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-gray-100"
+          disabled={isLoading}
+        >
+          {Object.entries(BookThemeLabels).map(([value, label]) => (
+            <option
+              key={value}
+              value={value}
+            >
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mb-6">
+        <label
+          htmlFor="style"
+          className="block text-lg font-medium text-gray-700 mb-2"
+        >
+          스타일
+        </label>
+        <select
+          id="style"
+          value={style}
+          onChange={(e) => setStyle(e.target.value as BookStyle)}
+          className="w-full p-3 text-base border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-gray-100"
+          disabled={isLoading}
+        >
+          {Object.entries(BookStyleLabels).map(([value, label]) => (
+            <option
+              key={value}
+              value={value}
+            >
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mb-6">
+        <label
           htmlFor="voice-model"
           className="block text-lg font-medium text-gray-700 mb-2"
         >
@@ -141,7 +229,10 @@ export default function CreateBookForm() {
           disabled={isLoading}
         >
           {VOICE_MODELS.map((voice) => (
-            <option key={voice.id} value={voice.id}>
+            <option
+              key={voice.id}
+              value={voice.id}
+            >
               {voice.name}
             </option>
           ))}
@@ -171,6 +262,13 @@ export default function CreateBookForm() {
           <span>2.0x</span>
         </div>
       </div>
+
+      {notification.message && (
+        <Notification
+          message={notification.message}
+          type={notification.type as 'success' | 'error'}
+        />
+      )}
 
       <button
         type="submit"
