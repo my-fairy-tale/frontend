@@ -14,7 +14,9 @@ export default async function MyPage() {
   try {
     await Promise.all([
       queryClient.prefetchQuery(userProfileOption(session?.accessToken)),
-      queryClient.prefetchInfiniteQuery(myBookOption(session?.accessToken)),
+      queryClient.prefetchInfiniteQuery(
+        myBookOption(session?.accessToken, 'createdAt,desc')
+      ),
     ]);
   } catch (err) {
     console.error('userprofile prefetch failed', err);

@@ -1,11 +1,14 @@
 import { ApiResponse, MyBooksData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 
-export const myBookOption = (accessToken?: string) =>
+export const myBookOption = (
+  accessToken?: string,
+  sort: string = 'createdAt,desc'
+) =>
   infiniteQueryOptions({
-    queryKey: ['myBooksInfinite'],
+    queryKey: ['myBooksInfinite', sort],
     queryFn: async ({ pageParam = 0 }) => {
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/my?status=COMPLETED&page=${pageParam}&size=4`;
+      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/my?page=${pageParam}&size=4&sort=${sort}`;
 
       const response = await fetch(backendUrl, {
         method: 'GET',
