@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import useUserStore from '@/store/use-user-store';
 import { Session } from 'next-auth';
 import { ApiResponse } from '@/types/api';
+import { useEffect, useRef } from 'react';
 
 interface AuthButtonProps {
   initialSession: Session | null;
@@ -13,11 +14,30 @@ interface AuthButtonProps {
 export default function AuthButton({ initialSession }: AuthButtonProps) {
   const { data: clientSession, status } = useSession();
   const { clearUser } = useUserStore();
+  const wasAuthenticated = useRef(false);
 
   // Use client session if available, fallback to initial session
   const session = clientSession ?? initialSession;
   const isLoggedIn =
     status === 'authenticated' || (status === 'loading' && initialSession);
+
+  // Monitor session and auto-logout on expiration
+  useEffect(() => {
+    if (status === 'authenticated') {
+      wasAuthenticated.current = true;
+    }
+
+    // If session becomes null after being authenticated, auto logout
+    if (
+      wasAuthenticated.current &&
+      status === 'unauthenticated' &&
+      !clientSession
+    ) {
+      console.log('Session expired - auto logging out');
+      clearUser();
+      signOut({ callbackUrl: '/auth/login' });
+    }
+  }, [status, clientSession, clearUser]);
 
   const handleLogout = async () => {
     clearUser();
