@@ -27,7 +27,7 @@ export interface CreateBookPageProps {
 
 export interface CreateBookData {
   bookId: string;
-  status: string;
+  status: BookStatus;
   estimatedCompletionMinutes: string;
 }
 

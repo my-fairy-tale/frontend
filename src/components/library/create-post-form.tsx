@@ -3,15 +3,47 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { fetchMyBooks } from '../mypage/my-book-list';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ApiResponse, MyBooksData, PostDetailData } from '@/types/api';
+
+export const fetchMyBooks = async ({
+  pageParam = 0,
+  accessToken,
+}: {
+  pageParam?: number;
+  accessToken: string;
+}) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/my?status=COMPLETED&page=${pageParam}&size=4`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  if (!response.ok) {
+    throw new Error('책 데이터를 불러올 수 없습니다.');
+  }
+
+  const data: ApiResponse<MyBooksData> = await response.json();
+  if (!data.data) {
+    throw new Error('책 데이터가 없습니다.');
+  }
+  return data.data;
+};
 
 export default function CreatePostForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     data: myBooks,
@@ -37,6 +69,60 @@ export default function CreatePostForm() {
         return lastPage.currentPage + 1;
       }
       return undefined;
+    },
+  });
+
+  const { mutate: createPost, isPending: isCreating } = useMutation({
+    mutationFn: async ({
+      bookId,
+      title,
+      content,
+    }: {
+      bookId: string;
+      title: string;
+      content: string;
+    }) => {
+      try {
+        if (!session?.accessToken) {
+          throw new Error('인증 정보가 없습니다.');
+        }
+        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`;
+        const response = await fetch(backendUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+          body: JSON.stringify({
+            bookId,
+            title,
+            content,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create post');
+        }
+
+        const data: ApiResponse<PostDetailData> = await response.json();
+        if (data.code !== 'POST_2001') {
+          throw new Error(data.message || '게시글 생성에 실패했습니다.');
+        }
+        return data;
+      } catch (err) {
+        console.log('api call failed in parent', err);
+        throw err;
+      }
+    },
+    onError: (err) => {
+      console.error('게시글 등록 실패', err);
+      alert('게시글 생성에 실패했습니다. 다시 시도해주세요');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['library-books'],
+      });
+      router.push('/library');
     },
   });
   const [selectedBookId, setSelectedBookId] = useState('');
@@ -96,38 +182,7 @@ export default function CreatePostForm() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-          body: JSON.stringify({
-            bookId: selectedBookId,
-            title,
-            content,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('게시글 등록에 실패했습니다.');
-      }
-
-      alert('책이 성공적으로 게시되었습니다!');
-      router.push('/library');
-      router.refresh();
-    } catch (error) {
-      console.error('게시 실패:', error);
-      alert('게시에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    createPost({ bookId: selectedBookId, title, content });
   };
 
   return (
@@ -277,19 +332,19 @@ export default function CreatePostForm() {
       <div className="flex gap-4">
         <button
           type="submit"
-          disabled={isSubmitting || !selectedBookId}
+          disabled={isCreating || !selectedBookId}
           className={`flex-1 py-3 rounded-lg font-semibold transition-colors ${
-            isSubmitting || !selectedBookId
+            isCreating || !selectedBookId
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : 'bg-blue-600 text-white hover:bg-blue-700'
           }`}
         >
-          {isSubmitting ? '게시 중...' : '게시하기'}
+          {isCreating ? '게시 중...' : '게시하기'}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          disabled={isSubmitting}
+          disabled={isCreating}
           className="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors disabled:opacity-50"
         >
           취소
