@@ -4,55 +4,17 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
 import { Fragment, useEffect } from 'react';
 import LibraryBookCard from './library-book-card';
-import { ApiResponse, LibraryBookListData } from '@/types/api';
+import { libraryBookOption } from './library-book-option';
 
 interface LibraryBookListProps {
   currentSort: string;
 }
 
-// API 호출 함수 (백엔드에서 실제 데이터 가져올 때 사용)
-const fetchLibraryBooks = async ({
-  pageParam = 0,
-  sort = 'latest',
-}: {
-  pageParam?: number;
-  sort?: string;
-}) => {
-  const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/library/posts?page=${pageParam}&size=5&sort=${sort}`;
-  const response = await fetch(backendUrl, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!response.ok) {
-    throw new Error('책 데이터를 불러올 수 없습니다');
-  }
-
-  const data: ApiResponse<LibraryBookListData> = await response.json();
-  if (!data.data) {
-    throw new Error('책 데이터가 없습니다.');
-  }
-  return data.data;
-};
-
 const LibraryBookList = ({ currentSort }: LibraryBookListProps) => {
   const { ref, inView } = useInView({ threshold: 0.5 });
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
-      queryKey: ['library-books'],
-      queryFn: async ({ pageParam = 0 }) => {
-        return await fetchLibraryBooks({
-          pageParam: pageParam,
-          sort: currentSort,
-        });
-      },
-      initialPageParam: 0,
-      getNextPageParam: (lastPage) => {
-        return !lastPage.isLast ? lastPage.currentPage + 1 : undefined;
-      },
-    });
+    useInfiniteQuery(libraryBookOption(currentSort));
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -93,9 +55,9 @@ const LibraryBookList = ({ currentSort }: LibraryBookListProps) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {data.pages.map((page, pageIndex) => (
           <Fragment key={pageIndex}>
-            {page.posts.map((post, i) => (
+            {page.posts.map((post) => (
               <LibraryBookCard
-                key={i}
+                key={post.postId}
                 post={post}
               />
             ))}

@@ -4,6 +4,9 @@ import LoadingSkeleton from '@/components/ui/loading-skeleton';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { FaPlus } from 'react-icons/fa';
+import { getQueryClient } from '@/lib/get-query-client';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { libraryBookOption } from '@/components/library/library-book-option';
 
 export default async function LibraryPage({
   searchParams,
@@ -12,6 +15,16 @@ export default async function LibraryPage({
 }) {
   const params = await searchParams;
   const sort = params?.sort || 'latest';
+
+  const queryClient = getQueryClient();
+
+  try {
+    await queryClient.prefetchInfiniteQuery(libraryBookOption(sort));
+  } catch (err) {
+    console.error('library books prefetch failed', err);
+  }
+
+  const dehydratedState = dehydrate(queryClient);
 
   return (
     <main className="max-w-7xl mx-auto p-6 md:p-8 my-8">
@@ -33,9 +46,11 @@ export default async function LibraryPage({
 
       <LibraryFilter currentSort={sort} />
 
-      <Suspense fallback={<LoadingSkeleton />}>
-        <LibraryBookList currentSort={sort} />
-      </Suspense>
+      <HydrationBoundary state={dehydratedState}>
+        <Suspense fallback={<LoadingSkeleton />}>
+          <LibraryBookList currentSort={sort} />
+        </Suspense>
+      </HydrationBoundary>
     </main>
   );
 }
