@@ -27,8 +27,8 @@ export default async function LibraryPage({
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <main className="max-w-7xl mx-auto p-6 md:p-8 my-8">
-      <div className="mb-6 flex items-end justify-between">
+    <main className="flex flex-col items-center py-6 px-40 my-8">
+      <div className="w-full mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-3">동화 광장</h1>
           <p className="text-lg text-gray-600">

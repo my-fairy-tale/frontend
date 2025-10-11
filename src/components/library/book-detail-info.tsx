@@ -281,7 +281,7 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   if (!postData) return <p>책을 찾을 수 없습니다.</p>;
 
   const handleMouseEnter = () => {
-    queryClient.prefetchQuery(bookDetailOption(slug));
+    queryClient.prefetchQuery(bookDetailOption(postData.book.bookId));
   };
 
   const handleLike = async () => {

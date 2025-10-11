@@ -1,10 +1,7 @@
 import { ApiResponse, MyBooksData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 
-export const myBookOption = (
-  accessToken?: string,
-  sort: string = 'createdAt,desc'
-) =>
+export const myBookOption = (accessToken?: string, sort: string = 'latest') =>
   infiniteQueryOptions({
     queryKey: ['myBooksInfinite', sort],
     queryFn: async ({ pageParam = 0 }) => {

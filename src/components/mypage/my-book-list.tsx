@@ -16,7 +16,7 @@ import { myBookOption } from './my-book-option';
 const MyBookList = () => {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
-  const [currentSort, setCurrentSort] = useState('createdAt,desc');
+  const [currentSort, setCurrentSort] = useState('latest');
 
   const {
     data,
@@ -196,9 +196,9 @@ const MyBookList = () => {
         <h2 className="text-xl font-semibold text-gray-800">내가 만든 책</h2>
         <div className="flex gap-2">
           <button
-            onClick={() => setCurrentSort('createdAt,desc')}
+            onClick={() => setCurrentSort('latest')}
             className={`px-3 py-1 text-sm rounded-full transition-colors ${
-              currentSort === 'createdAt,desc'
+              currentSort === 'latest'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
@@ -206,9 +206,9 @@ const MyBookList = () => {
             최신순
           </button>
           <button
-            onClick={() => setCurrentSort('createdAt,asc')}
+            onClick={() => setCurrentSort('oldest')}
             className={`px-3 py-1 text-sm rounded-full transition-colors ${
-              currentSort === 'createdAt,asc'
+              currentSort === 'oldest'
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
