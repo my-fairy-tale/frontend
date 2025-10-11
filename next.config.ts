@@ -9,13 +9,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'childrens-book-files.s3.ap-northeast-2.amazonaws.com',
         port: '',
-        pathname: '/**', // 해당 호스트의 모든 경로 이미지를 허용
+        pathname: '/**',
       },
-      // 여기에 다른 이미지 도메인을 필요에 따라 추가할 수 있습니다.
-      // {
-      //   protocol: 'https',
-      //   hostname: 'another-domain.com',
-      // },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 

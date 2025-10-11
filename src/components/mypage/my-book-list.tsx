@@ -1,7 +1,7 @@
 'use client';
 
-import { ApiResponse, MyBooksData } from '@/types/api';
-import { Fragment, useEffect } from 'react';
+import { ApiResponse, BookStatus, MyBooksData } from '@/types/api';
+import { Fragment, useEffect, useState } from 'react';
 import BookThumbnail from './book-thumbnail';
 import {
   InfiniteData,
@@ -13,38 +13,10 @@ import { useInView } from 'react-intersection-observer';
 import { useSession } from 'next-auth/react';
 import { myBookOption } from './my-book-option';
 
-// API 호출 함수: pageParam을 인자로 받도록 수정
-export const fetchMyBooks = async ({
-  pageParam = 0,
-  accessToken,
-}: {
-  pageParam?: number;
-  accessToken: string;
-}) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/my?status=COMPLETED&page=${pageParam}&size=4`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-  if (!response.ok) {
-    throw new Error('책 데이터를 불러올 수 없습니다.');
-  }
-
-  const data: ApiResponse<MyBooksData> = await response.json();
-  if (!data.data) {
-    throw new Error('책 데이터가 없습니다.');
-  }
-  return data.data;
-};
-
 const MyBookList = () => {
   const queryClient = useQueryClient();
   const { data: session } = useSession();
+  const [currentSort, setCurrentSort] = useState('latest');
 
   const {
     data,
@@ -54,7 +26,16 @@ const MyBookList = () => {
     isLoading,
     isError,
     isFetchingNextPage,
-  } = useInfiniteQuery(myBookOption(session?.accessToken));
+  } = useInfiniteQuery({
+    ...myBookOption(session?.accessToken, currentSort),
+    refetchInterval: (query) => {
+      // 현재 데이터에서 PROCESSING 상태의 책이 있는지 확인
+      const hasProcessing = query.state.data?.pages.some((page) =>
+        page.books.some((book) => book.status === BookStatus.PROCESSING)
+      );
+      return hasProcessing ? 10000 : false;
+    },
+  });
 
   const { ref, inView } = useInView({
     threshold: 0.5, // 요소가 50% 보이면 콜백 실행
@@ -211,7 +192,31 @@ const MyBookList = () => {
 
   return (
     <section>
-      <h2 className="text-xl font-semibold mb-4 text-gray-800">내가 만든 책</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold text-gray-800">내가 만든 책</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setCurrentSort('latest')}
+            className={`px-3 py-1 text-sm rounded-full transition-colors ${
+              currentSort === 'latest'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            최신순
+          </button>
+          <button
+            onClick={() => setCurrentSort('oldest')}
+            className={`px-3 py-1 text-sm rounded-full transition-colors ${
+              currentSort === 'oldest'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            오래된순
+          </button>
+        </div>
+      </div>
 
       {!noBookExist ? (
         <>
@@ -225,6 +230,7 @@ const MyBookList = () => {
                     thumbnailUrl={book.thumbnailUrl}
                     title={book.title}
                     isPublic={book.visibility}
+                    status={book.status}
                     onDelete={() => deleteBook({ bookId: book.id })}
                     onStatusChange={handleStatusChange}
                   />

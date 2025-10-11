@@ -1,7 +1,7 @@
 'use client';
 
 import { getQueryClient } from '@/lib/get-query-client';
-import { ApiResponse, BookData } from '@/types/api';
+import { ApiResponse, BookData, BookStatus } from '@/types/api';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -15,6 +15,7 @@ interface BookThumbnailProps {
   thumbnailUrl: string;
   title: string;
   isPublic: 'PUBLIC' | 'PRIVATE';
+  status: BookStatus;
   onStatusChange?: (bookId: string, newStatus: 'PUBLIC' | 'PRIVATE') => void;
   onDelete?: (bookId: string) => void;
   showStatusButtons?: boolean;
@@ -25,6 +26,7 @@ const BookThumbnail = ({
   thumbnailUrl,
   title,
   isPublic: initialIsPublic,
+  status: initialStatus,
   onStatusChange = () => {},
   onDelete,
   showStatusButtons = true,
@@ -115,28 +117,57 @@ const BookThumbnail = ({
       setIsLoading(false);
     }
   };
+  const isProcessing = initialStatus === BookStatus.PROCESSING;
+  const isFailed = initialStatus === BookStatus.FAILED;
+
   return (
     <div className="relative bg-white rounded-lg shadow-md overflow-hidden">
       <Link
         className="block"
         onMouseEnter={handleMouseEnter}
-        href={`/books/${id}`}
+        href={isProcessing || isFailed ? '#' : `/books/${id}`}
+        onClick={(e) => {
+          if (isProcessing || isFailed) {
+            e.preventDefault();
+          }
+        }}
       >
         <div className="relative h-48">
           <Image
             src={thumbnailUrl || '/book_placeholder.jpg'}
             alt={title}
             fill
-            className="object-cover"
-          />
-          {/* 공개/비공개 상태 뱃지 */}
-          <span
-            className={`absolute top-2 right-2 px-2 py-1 text-xs font-bold text-white rounded-full ${
-              isPublic ? 'bg-blue-500' : 'bg-gray-500'
+            className={`object-cover ${
+              isProcessing || isFailed ? 'opacity-50' : ''
             }`}
-          >
-            {isPublic ? '공개' : '비공개'}
-          </span>
+          />
+
+          {/* PROCESSING 상태 오버레이 */}
+          {isProcessing && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-2"></div>
+              <p className="text-white font-semibold text-sm">생성 중...</p>
+            </div>
+          )}
+
+          {/* FAILED 상태 오버레이 */}
+          {isFailed && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40">
+              <div className="text-red-500 text-4xl mb-2">⚠️</div>
+              <p className="text-white font-semibold text-sm">생성 실패</p>
+            </div>
+          )}
+
+          {/* 공개/비공개 상태 뱃지 */}
+          {!isProcessing && !isFailed && (
+            <span
+              className={`absolute top-2 right-2 px-2 py-1 text-xs font-bold text-white rounded-full ${
+                isPublic ? 'bg-blue-500' : 'bg-gray-500'
+              }`}
+            >
+              {isPublic ? '공개' : '비공개'}
+            </span>
+          )}
 
           {/* 삭제 버튼 */}
           {showStatusButtons && (
@@ -157,7 +188,7 @@ const BookThumbnail = ({
           <h3 className="font-bold text-gray-800 truncate mb-2">{title}</h3>
 
           {/* 토글 스위치 UI */}
-          {showStatusButtons && (
+          {showStatusButtons && !isProcessing && !isFailed && (
             <div className="flex items-center justify-between mt-2">
               <span className="text-sm text-gray-600 select-none">
                 공개 설정
@@ -176,6 +207,22 @@ const BookThumbnail = ({
                   }`}
                 />
               </button>
+            </div>
+          )}
+
+          {/* PROCESSING 상태 메시지 */}
+          {isProcessing && (
+            <div className="mt-2 text-center">
+              <p className="text-sm text-gray-500">동화책을 만들고 있어요...</p>
+            </div>
+          )}
+
+          {/* FAILED 상태 메시지 */}
+          {isFailed && (
+            <div className="mt-2 text-center">
+              <p className="text-sm text-red-500 font-semibold">
+                생성에 실패했습니다
+              </p>
             </div>
           )}
         </div>

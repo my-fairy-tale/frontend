@@ -27,7 +27,7 @@ export interface CreateBookPageProps {
 
 export interface CreateBookData {
   bookId: string;
-  status: string;
+  status: BookStatus;
   estimatedCompletionMinutes: string;
 }
 
@@ -160,6 +160,18 @@ export interface LibraryDetailBookData {
   };
   averageRating?: number;
   reviewCount: number;
+}
+
+export interface PostDetailData {
+  postId: number;
+  bookId: string;
+  title: string;
+  content: string;
+  authorName: string;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ReviewListData {

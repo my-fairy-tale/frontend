@@ -135,17 +135,17 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
 
       const refreshedToken = await refreshPromise;
       if (refreshedToken.error) {
-        console.log('refreshToken error', refreshedToken);
-        // Don't return null - return token with error flag so session can handle it
-        return { ...token, error: 'RefreshAccessTokenError' };
+        console.log('refreshToken error - invalidating session');
+        // Return null to invalidate session
+        return null;
       }
 
       return refreshedToken;
     },
     async session({ session, token }) {
+      // JWT callback이 null을 반환하면 이 callback은 호출되지 않음
       session.user = token.user;
       session.accessToken = token.accessToken;
-      session.error = token.error;
 
       return session;
     },

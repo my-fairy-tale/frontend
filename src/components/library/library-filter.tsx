@@ -14,8 +14,9 @@ const LibraryFilter = ({ currentSort }: LibraryFilterProps) => {
 
   const sortOptions = [
     { value: 'latest', label: '최신순' },
-    { value: 'rating', label: '평점순' },
-    { value: 'reviews', label: '리뷰순' },
+    { value: 'popular', label: '인기순' },
+    { value: 'views', label: '조회순' },
+    { value: 'likes', label: '좋아요순' },
   ];
 
   const handleSortChange = (sort: string) => {
@@ -29,7 +30,7 @@ const LibraryFilter = ({ currentSort }: LibraryFilterProps) => {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
+      <div className="bg-white rounded-lg shadow-md w-full p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex gap-3">
           {sortOptions.map((option) => (
             <button

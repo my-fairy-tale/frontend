@@ -1,20 +1,27 @@
 'use client';
 
 import Image from 'next/image';
-import { FaStar, FaHeart, FaRegHeart, FaShare, FaTrash } from 'react-icons/fa';
+import {
+  FaStar,
+  FaHeart,
+  FaRegHeart,
+  FaShare,
+  FaTrash,
+  FaEdit,
+} from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getQueryClient } from '@/lib/get-query-client';
 import { libraryDetailBookOption } from './library-detail-book-option';
 import { libraryDetailLikeOption } from '@/components/library/library-detail-like-option';
 import { bookDetailOption } from '../book/book-detail-option';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { ApiResponse, LikeData } from '@/types/api';
+import { ApiResponse, LikeData, PostDetailData } from '@/types/api';
 import useUserStore from '@/store/use-user-store';
 import useModalStore from '@/store/use-modal-store';
 import { useRouter } from 'next/navigation';
 import DeletePostModal from '@/components/ui/modal/delete-post-modal';
+import EditPostModal from '@/components/ui/modal/edit-post-modal';
 
 interface BookDetailInfoProps {
   slug: string;
@@ -22,8 +29,7 @@ interface BookDetailInfoProps {
 
 export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   const [isLiked, setIsLiked] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const queryClient = getQueryClient();
+  const queryClient = useQueryClient();
   const { data: session } = useSession();
   const { user } = useUserStore();
   const { openModal, closeModal } = useModalStore();
@@ -119,6 +125,151 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
     },
   });
 
+  const { mutate: updateBookDetail, isPending: isUpdating } = useMutation({
+    mutationFn: async ({
+      title,
+      content,
+    }: {
+      title: string;
+      content: string;
+    }) => {
+      try {
+        if (!session?.accessToken) {
+          throw new Error('인증 정보가 없습니다.');
+        }
+        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`;
+        const response = await fetch(backendUrl, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+          body: JSON.stringify({ title, content }),
+        });
+
+        if (!response.ok) {
+          throw new Error('게시글을 수정할 수 없습니다.');
+        }
+
+        const data: ApiResponse<PostDetailData> = await response.json();
+        if (data.code !== 'POST_2002') {
+          throw new Error(data?.message || '게시글 수정 실패');
+        }
+
+        return data.data;
+      } catch (err) {
+        console.log('api call failed in parent', err);
+        throw err;
+      }
+    },
+    onMutate: async (variables) => {
+      const { title, content } = variables;
+      await queryClient.cancelQueries({
+        queryKey: ['library-detail-book', slug],
+      });
+      const previousData = queryClient.getQueryData<PostDetailData>([
+        'library-detail-book',
+        slug,
+      ]);
+
+      queryClient.setQueryData<PostDetailData>(
+        ['library-detail-book', slug],
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            title,
+            content,
+          };
+        }
+      );
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ['library-detail-book', slug],
+          context.previousData
+        );
+      }
+      console.error('게시글 수정 실패:', err);
+      alert('게시글 수정에 실패했습니다. 다시 시도해주세요.');
+    },
+    onSuccess: () => {
+      closeModal();
+      alert('게시글이 수정되었습니다.');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['library-detail-book', slug],
+      });
+    },
+  });
+
+  const { mutate: deleteBookDetail, isPending: isDeleting } = useMutation({
+    mutationFn: async () => {
+      try {
+        if (!session?.accessToken) {
+          throw new Error('인증 정보가 없습니다.');
+        }
+
+        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`;
+        const response = await fetch(backendUrl, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('게시글을 삭제할 수 없습니다.');
+        }
+
+        const data: ApiResponse<null> = await response.json();
+        if (data.code !== 'POST_2003') {
+          throw new Error(data?.message || '게시글 삭제 실패');
+        }
+
+        return data.data;
+      } catch (err) {
+        console.log('api call failed in parent', err);
+        throw err;
+      }
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({
+        queryKey: ['library-detail-book', slug],
+      });
+      const previousData = queryClient.getQueryData<PostDetailData>([
+        'library-detail-book',
+        slug,
+      ]);
+      queryClient.setQueryData(['library-detail-book', slug], null);
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          ['library-detail-book', slug],
+          context.previousData
+        );
+      }
+      console.error('게시글 삭제 실패:', err);
+      alert('게시글 삭제에 실패했습니다. 다시 시도해주세요.');
+    },
+    onSuccess: () => {
+      closeModal();
+      alert('게시글이 삭제되었습니다.');
+      router.push('/library');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['library-detail-book', slug],
+      });
+    },
+  });
+
   useEffect(() => {
     if (likeData) {
       setIsLiked(likeData.isLiked);
@@ -130,7 +281,7 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   if (!postData) return <p>책을 찾을 수 없습니다.</p>;
 
   const handleMouseEnter = () => {
-    queryClient.prefetchQuery(bookDetailOption(slug));
+    queryClient.prefetchQuery(bookDetailOption(postData.book.bookId));
   };
 
   const handleLike = async () => {
@@ -158,6 +309,7 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   };
 
   const handleDeleteClick = () => {
+    if (!postData) return;
     openModal(
       <DeletePostModal
         title={postData.book.originalTitle}
@@ -169,37 +321,24 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   };
 
   const handleDeleteConfirm = async () => {
-    try {
-      setIsDeleting(true);
+    deleteBookDetail();
+  };
 
-      if (!session?.accessToken) {
-        throw new Error('인증 정보가 없습니다.');
-      }
+  const handleEditClick = () => {
+    if (!postData) return;
+    openModal(
+      <EditPostModal
+        initialTitle={postData.title}
+        initialContent={postData.content}
+        onConfirm={handleEditConfirm}
+        onCancel={closeModal}
+      />,
+      { size: 'md' }
+    );
+  };
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('게시글 삭제에 실패했습니다.');
-      }
-
-      closeModal();
-      alert('게시글이 삭제되었습니다.');
-      router.push('/library');
-    } catch (error) {
-      console.error('게시글 삭제 실패:', error);
-      alert('게시글 삭제에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsDeleting(false);
-    }
+  const handleEditConfirm = async (title: string, content: string) => {
+    updateBookDetail({ title, content });
   };
 
   const isAuthor = user && postData && user.id === postData.authorId;
@@ -306,14 +445,24 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
             </button>
 
             {isAuthor && (
-              <button
-                onClick={handleDeleteClick}
-                disabled={isDeleting}
-                className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FaTrash />
-                삭제
-              </button>
+              <>
+                <button
+                  onClick={handleEditClick}
+                  disabled={isUpdating}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaEdit />
+                  수정
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  disabled={isDeleting}
+                  className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaTrash />
+                  삭제
+                </button>
+              </>
             )}
           </div>
         </div>
