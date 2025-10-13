@@ -7,7 +7,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
 
   // 인증이 필요한 경로들
-  const protectedRoutes = ['/books/create', '/mypage', '/admin'];
+  const protectedRoutes = ['/books/create', '/mypage', '/admin', '/activity'];
   const isProtectedRoute = protectedRoutes.some((route) =>
     nextUrl.pathname.startsWith(route)
   );

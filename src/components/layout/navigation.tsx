@@ -7,6 +7,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/books', label: '동화책 만들기' },
   { href: '/library', label: '모두의 서재' },
+  { href: '/activity', label: '내 활동' },
   { href: '/mypage', label: '마이페이지' },
 ];
 
