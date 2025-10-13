@@ -1,4 +1,3 @@
-// components/community/book-reviews.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -211,12 +210,13 @@ export default function BookReviews({ slug }: BookReviewsProps) {
   if (isError) return <p>오류가 발생했습니다: {error.message}</p>;
 
   const allReviews = reviews?.pages.flatMap((page) => page.reviews) || [];
+  const totalReviews = reviews?.pages[0].pageInfo.totalElements || 0;
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
-          리뷰 ({allReviews.length})
+          리뷰 ({totalReviews})
         </h2>
 
         {!isWriting && session && (
