@@ -24,6 +24,8 @@ export async function loginAction(
           return '이메일 또는 비밀번호가 올바르지 않습니다.';
         case 'CallbackRouteError':
           return '서버가 잠시 자는중이에요... ㅠ_ㅜ';
+        case 'AccessDenied':
+          return '이미 존재하는 이메일입니다!';
         default:
           console.log('sign in at server action error is', error);
           return '알 수 없는 오류가 발생했습니다.';
