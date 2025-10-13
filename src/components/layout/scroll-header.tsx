@@ -33,7 +33,7 @@ export default function ScrollHeader({ children }: ScrollHeaderProps) {
 
   return (
     <div
-      className={`transition-transform duration-300 ${
+      className={`fixed top-0 w-full left-0 z-50 transition-transform duration-300 ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >

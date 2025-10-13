@@ -27,11 +27,11 @@ export default async function LibraryPage({
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <main className="flex flex-col items-center py-6 px-40 my-8">
+    <main className="max-w-7xl mx-auto p-6 md:p-8 my-8">
       <div className="w-full mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-3">동화 광장</h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 max-md:hidden">
             다양한 사람들이 만든 멋진 동화책을 구경하고, 리뷰를 남겨보세요
           </p>
         </div>

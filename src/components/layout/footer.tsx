@@ -9,7 +9,7 @@ const Footer = () => {
     'text-gray-500 transition-colors duration-200 hover:text-blue-500 hover:underline';
 
   return (
-    <footer className="bg-gray-50 border-t border-gray-200 text-sm text-gray-500">
+    <footer className="w-full bg-gray-50 border-t border-gray-200 text-sm text-gray-500">
       <div className="max-w-6xl mx-auto py-16 px-8">
         <div className="flex flex-wrap justify-between gap-8 mb-12">
           {/* --- 프로젝트 섹션 --- */}
