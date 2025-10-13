@@ -9,6 +9,8 @@ import useUserStore from '@/store/use-user-store';
 import { useSession } from 'next-auth/react';
 import { UserProfileData } from '@/types/api';
 import ChoosePreferenceVoice from './choose-preference-voice';
+import useModalStore from '@/store/use-modal-store';
+import PhoneNumberModal from '../ui/modal/phone-number-modal';
 
 const UserProfile = () => {
   const { data: session } = useSession();
@@ -20,6 +22,7 @@ const UserProfile = () => {
     error,
   } = useQuery(userProfileOption(session?.accessToken));
   const { user: storedUser, setUser } = useUserStore();
+  const { openModal, closeModal } = useModalStore();
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
   const [newPhoneNumber, setNewPhoneNumber] = useState('');
@@ -70,10 +73,7 @@ const UserProfile = () => {
     },
     onError: (err, variables, context) => {
       if (context?.previousUser) {
-        queryClient.setQueryData(
-          userProfileOption(session?.accessToken).queryKey,
-          context.previousUser
-        );
+        queryClient.setQueryData(['members-me'], context.previousUser);
       }
       console.error('프로필 업데이트 실패:', err);
       alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
@@ -81,16 +81,23 @@ const UserProfile = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: userProfileOption(session?.accessToken).queryKey,
+        queryKey: ['members-me'],
       });
     },
   });
 
+  //user가 바뀔때마다 store에 update
   useEffect(() => {
     if (user) {
       setUser(user);
     }
   }, [user, setUser]);
+
+  useEffect(() => {
+    if (user?.phoneNumber === null) {
+      openModal(<PhoneNumberModal onConfirm={() => closeModal()} />);
+    }
+  }, [closeModal, openModal, user?.phoneNumber]);
 
   if (isLoading) return <p>사용자 정보를 불러오는 중입니다...</p>;
   if (isError)
@@ -107,7 +114,10 @@ const UserProfile = () => {
     } else if (numbers.length <= 7) {
       return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
     } else {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
+        7,
+        11
+      )}`;
     }
   };
 
