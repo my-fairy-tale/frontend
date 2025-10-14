@@ -11,6 +11,7 @@ import { UserProfileData } from '@/types/api';
 import ChoosePreferenceVoice from './choose-preference-voice';
 import useModalStore from '@/store/use-modal-store';
 import PhoneNumberModal from '../ui/modal/phone-number-modal';
+import { formatPhoneNumber, validatePhoneNumber } from '@/lib/phone-utils';
 
 const UserProfile = () => {
   const { data: session } = useSession();
@@ -63,17 +64,23 @@ const UserProfile = () => {
       const previousUser = queryClient.getQueryData<UserProfileData>([
         'members-me',
       ]);
-      queryClient.setQueryData<UserProfileData>(['members-me'], (old) => {
-        if (!old) return old;
-        return { ...old, name, phoneNumber };
-      });
+      queryClient.setQueryData<UserProfileData>(
+        userProfileOption(session?.accessToken).queryKey,
+        (old) => {
+          if (!old) return old;
+          return { ...old, name, phoneNumber };
+        }
+      );
       setIsEditing(false);
 
       return { previousUser };
     },
     onError: (err, variables, context) => {
       if (context?.previousUser) {
-        queryClient.setQueryData(['members-me'], context.previousUser);
+        queryClient.setQueryData(
+          userProfileOption(session?.accessToken).queryKey,
+          context.previousUser
+        );
       }
       console.error('프로필 업데이트 실패:', err);
       alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
@@ -81,7 +88,7 @@ const UserProfile = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({
-        queryKey: ['members-me'],
+        queryKey: userProfileOption(session?.accessToken).queryKey,
       });
     },
   });
@@ -103,23 +110,6 @@ const UserProfile = () => {
   if (isError)
     return <p>사용자 정보를 불러오는데 실패했습니다: {String(error)}</p>;
   if (!user) return <p>사용자 정보를 찾을 수 없습니다.</p>;
-
-  const formatPhoneNumber = (value: string) => {
-    // Remove all non-digits
-    const numbers = value.replace(/\D/g, '');
-
-    // Format: 010-1234-5678
-    if (numbers.length <= 3) {
-      return numbers;
-    } else if (numbers.length <= 7) {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    } else {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
-        7,
-        11
-      )}`;
-    }
-  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
@@ -145,12 +135,9 @@ const UserProfile = () => {
     }
 
     // Validate phone number if provided
-    if (newPhoneNumber.trim()) {
-      const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
-      if (!phoneRegex.test(newPhoneNumber.trim())) {
-        alert('올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)');
-        return;
-      }
+    if (newPhoneNumber.trim() && !validatePhoneNumber(newPhoneNumber)) {
+      alert('올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)');
+      return;
     }
 
     updateProfile({ name: newName.trim(), phoneNumber: newPhoneNumber.trim() });

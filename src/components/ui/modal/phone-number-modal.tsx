@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import { UserProfileData } from '@/types/api';
 import useModalStore from '@/store/use-modal-store';
 import useUserStore from '@/store/use-user-store';
+import { formatPhoneNumber, validatePhoneNumber } from '@/lib/phone-utils';
 
 interface PhoneNumberModalProps {
   onConfirm: () => void;
@@ -79,21 +80,6 @@ const PhoneNumberModal = ({ onConfirm }: PhoneNumberModalProps) => {
     },
   });
 
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-
-    if (numbers.length <= 3) {
-      return numbers;
-    } else if (numbers.length <= 7) {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-    } else {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
-        7,
-        11
-      )}`;
-    }
-  };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setPhoneNumber(formatted);
@@ -119,8 +105,7 @@ const PhoneNumberModal = ({ onConfirm }: PhoneNumberModalProps) => {
       return;
     }
 
-    const phoneRegex = /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/;
-    if (!phoneRegex.test(phoneNumber.trim())) {
+    if (!validatePhoneNumber(phoneNumber)) {
       alert('올바른 전화번호 형식이 아닙니다. (예: 010-1234-5678)');
       return;
     }
