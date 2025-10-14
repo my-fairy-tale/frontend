@@ -8,35 +8,24 @@ export default function AuthErrorPage() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
 
+  const errorMessages: { [key: string]: string } = {
+    Configuration: '서버 설정에 문제가 있습니다',
+    AccessDenied: '접근이 거부되었습니다',
+    Verification: '인증 토큰이 만료되었습니다',
+    OAuthSignin: '소셜 로그인 시작 실패',
+    OAuthCallback: '소셜 로그인 처리 오류',
+    OAuthCreateAccount: '소셜 계정 생성 실패',
+    EmailCreateAccount: '이메일 계정 생성 실패',
+    Callback: '인증 콜백 처리 오류',
+    OAuthAccountNotLinked: '이미 다른 방법으로 가입된 이메일입니다',
+    EmailSignin: '이메일 로그인 실패',
+    CredentialsSignin: '이메일 또는 비밀번호가 올바르지 않습니다',
+    SessionRequired: '로그인이 필요합니다',
+  };
+
   const getErrorMessage = (error: string | null) => {
-    switch (error) {
-      case 'Configuration':
-        return '서버 설정에 문제가 있습니다';
-      case 'AccessDenied':
-        return '접근이 거부되었습니다';
-      case 'Verification':
-        return '인증 토큰이 만료되었습니다';
-      case 'OAuthSignin':
-        return '소셜 로그인 시작 실패';
-      case 'OAuthCallback':
-        return '소셜 로그인 처리 오류';
-      case 'OAuthCreateAccount':
-        return '소셜 계정 생성 실패';
-      case 'EmailCreateAccount':
-        return '이메일 계정 생성 실패';
-      case 'Callback':
-        return '인증 콜백 처리 오류';
-      case 'OAuthAccountNotLinked':
-        return '이미 다른 방법으로 가입된 이메일입니다';
-      case 'EmailSignin':
-        return '이메일 로그인 실패';
-      case 'CredentialsSignin':
-        return '이메일 또는 비밀번호가 올바르지 않습니다';
-      case 'SessionRequired':
-        return '로그인이 필요합니다';
-      default:
-        return '알 수 없는 오류가 발생했습니다';
-    }
+    if (!error) return '알 수 없는 오류가 발생했습니다';
+    return errorMessages[error] || '알 수 없는 오류가 ';
   };
 
   return (

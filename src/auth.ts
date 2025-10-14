@@ -118,7 +118,6 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
     async signIn({ user, account }) {
       // OAuth 로그인인 경우
       if (account?.provider === 'google' || account?.provider === 'kakao') {
-        console.log(account.provider, 'login complete', user, account);
         try {
           const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/oauth/simple`;
           const response = await fetch(backendUrl, {
@@ -135,7 +134,6 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
           });
 
           const data: ApiResponse<OAuthData> = await response.json();
-          console.log('OAuth backend response:', data);
 
           if (response.ok && data.data) {
             // 백엔드에서 받은 토큰을 user 객체에 추가

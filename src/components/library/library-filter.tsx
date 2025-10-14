@@ -31,7 +31,7 @@ const LibraryFilter = ({ currentSort }: LibraryFilterProps) => {
   return (
     <>
       <div className="bg-white rounded-lg shadow-md w-full p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex flew-row gap-3">
+        <div className="flex flex-row gap-3">
           {sortOptions.map((option) => (
             <button
               key={option.value}
