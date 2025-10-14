@@ -27,7 +27,7 @@ export default async function LibraryDetailPage(props: {
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <main>
+    <main className="w-full mx-auto p-6 md:p-8 my-8">
       <HydrationBoundary state={dehydratedState}>
         <BookDetailInfo slug={slug} />
         <BookReviews slug={slug} />
