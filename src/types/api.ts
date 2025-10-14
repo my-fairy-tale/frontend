@@ -242,11 +242,13 @@ export interface MyReviewData {
   updatedAt: string;
 }
 export interface MyReviewsListData {
-  content: MyReviewData[];
+  reviews: MyReviewData[];
   totalElements: number;
   totalPages: number;
-  size: number;
-  number: number;
+  currentPage: number;
+  pageSize: number;
+  isFirst: number;
+  isLast: number;
 }
 
 export interface MyBookMarkedPostsListData {

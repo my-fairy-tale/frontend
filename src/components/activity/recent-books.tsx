@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { getQueryClient } from '@/lib/get-query-client';
 import { bookDetailOption } from '../book/book-detail-option';
 import { formatRelativeTime } from '@/lib/date-utils';
-import { useEffect } from 'react';
 
 const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -35,10 +34,6 @@ const RecentBooks = () => {
     isError,
     error,
   } = useQuery(recentBookOption(session?.accessToken));
-
-  useEffect(() => {
-    queryClient.invalidateQueries({ queryKey: ['recent-book'] });
-  }, [queryClient]);
 
   const handleMouseEnter = (bookId: string) => {
     queryClient.prefetchQuery(bookDetailOption(bookId));
@@ -92,7 +87,7 @@ const RecentBooks = () => {
             href={`/books/${book.bookId}`}
             onMouseEnter={() => handleMouseEnter(book.bookId)}
             onClick={() => {
-              queryClient.invalidateQueries({ queryKey: ['recent-book'] });
+              queryClient.fetchQuery({ queryKey: ['recent-book'] });
             }}
             className="bg-white rounded-lg p-4 transition-shadow"
           >

@@ -77,7 +77,7 @@ export default function MyReviews() {
     );
   }
 
-  const reviews = myReviewsList?.pages.flatMap((page) => page.content) || [];
+  const reviews = myReviewsList?.pages.flatMap((page) => page.reviews) || [];
 
   // Empty 상태
   if (reviews.length === 0) {

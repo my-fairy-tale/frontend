@@ -33,8 +33,8 @@ export const myReviewsOption = (accessToken?: string) =>
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      if (lastPage.number !== lastPage.totalPages) {
-        return lastPage.number + 1;
+      if (!lastPage.isLast) {
+        return lastPage.currentPage + 1;
       }
     },
     staleTime: 5 * 60 * 1000, // 5분

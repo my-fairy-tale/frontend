@@ -102,9 +102,9 @@ const BookmarkedPosts = () => {
   return (
     <SectionWrapper>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-        {bookmarks.map((bookmark, i) => (
+        {bookmarks.map((bookmark) => (
           <Link
-            key={(bookmark.bookMarkId, i)}
+            key={bookmark.bookMarkId}
             href={`/library/${bookmark.postId}`}
             onMouseEnter={() => handleMouseEnter(bookmark.postId)}
             className="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow border border-gray-100"
