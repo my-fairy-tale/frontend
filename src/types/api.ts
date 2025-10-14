@@ -15,6 +15,18 @@ export interface AuthData {
   refreshTokenExpiresIn: number;
 }
 
+export interface OAuthData {
+  id: number;
+  email: string;
+  name: string;
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiresIn: number;
+  refreshTokenExpiresIn: number;
+  isNewUser: boolean;
+  phoneNumber: string | null;
+}
+
 export interface CreateBookPageProps {
   title: string;
   originalText: string;
@@ -95,11 +107,21 @@ export interface MyBooksData {
   isLast: boolean;
 }
 
+export interface RecentBooksData {
+  bookId: string;
+  title: string;
+  status: BookStatus;
+  targetAge: number;
+  thumbnailUrl: string;
+  createdAt: string;
+  viewedAt: string;
+}
+
 export interface UserProfileData {
   id: number;
   email: string;
   name: string;
-  phoneNumber: string;
+  phoneNumber: string | null;
   provider: string;
   role: string;
   status: string;
@@ -207,6 +229,65 @@ export interface LikeData {
   isLiked: boolean;
   likeCount: number;
   action: string;
+}
+
+export interface MyReviewData {
+  reviewId: number;
+  postId: number;
+  bookTitle: string;
+  rating: number;
+  comment: string;
+  isAnonymous: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface MyReviewsListData {
+  reviews: MyReviewData[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  isFirst: number;
+  isLast: number;
+}
+
+export interface MyBookMarkedPostsListData {
+  bookmarks: BookMarkedData[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  isLast: boolean;
+  isFirst: boolean;
+}
+
+export interface BookMarkedData {
+  bookMarkId: number;
+  postId: number;
+  postTitle: string;
+  thumbnailUrl: string;
+  bookMarkedAt: string;
+  post: {
+    postId: number;
+    title: string;
+    content: string;
+    authorId: number;
+    authorName: string;
+    viewCount: number;
+    likeCount: number;
+    createdAt: string;
+    book: {
+      bookId: string;
+      originalTitle: string;
+      thumbnailUrl: string;
+      targetAge: number;
+      theme: BookTheme;
+      style: BookStyle;
+      totalPages: number;
+    };
+    averageRating?: number;
+    reviewCount: number;
+  };
 }
 
 export enum BookStatus {

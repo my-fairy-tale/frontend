@@ -31,13 +31,13 @@ const LibraryFilter = ({ currentSort }: LibraryFilterProps) => {
   return (
     <>
       <div className="bg-white rounded-lg shadow-md w-full p-4 mb-6 flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex gap-3">
+        <div className="flex flex-row gap-3">
           {sortOptions.map((option) => (
             <button
               key={option.value}
               onClick={() => handleSortChange(option.value)}
               disabled={isPending}
-              className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+              className={`px-4 py-2 max-md:text-xs rounded-lg transition-colors font-medium ${
                 currentSort === option.value
                   ? 'bg-blue-500 text-white hover:bg-blue-600'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'

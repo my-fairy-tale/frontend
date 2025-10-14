@@ -18,7 +18,7 @@ const SnapSection = ({
 
 export default function HomePage() {
   return (
-    <main className="bg-gray-50 text-gray-800">
+    <main className="bg-gray-50  w-full text-gray-800">
       <SnapSection className="text-center py-20 md:py-32 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">

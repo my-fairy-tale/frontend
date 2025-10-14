@@ -281,7 +281,9 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   if (!postData) return <p>책을 찾을 수 없습니다.</p>;
 
   const handleMouseEnter = () => {
-    queryClient.prefetchQuery(bookDetailOption(postData.book.bookId));
+    queryClient.prefetchQuery(
+      bookDetailOption(postData.book.bookId, session?.accessToken)
+    );
   };
 
   const handleLike = async () => {
@@ -344,7 +346,10 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   const isAuthor = user && postData && user.id === postData.authorId;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <div
+      onMouseEnter={handleMouseEnter}
+      className="bg-white rounded-lg shadow-lg p-6 md:p-8"
+    >
       <div className="flex flex-col md:flex-row gap-8">
         {/* 왼쪽: 책 표지 */}
         <div className="w-full md:w-1/4 flex-shrink-0">
@@ -361,7 +366,6 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
           {/* 읽기 버튼 */}
           <Link
             href={`/books/${postData.book.bookId}`}
-            onMouseEnter={handleMouseEnter}
             className="mt-4 w-full block text-center bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors"
           >
             동화책 읽기 📖

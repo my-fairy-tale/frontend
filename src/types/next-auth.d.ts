@@ -7,6 +7,7 @@ import 'next-auth/jwt';
 declare module 'next-auth' {
   interface Session {
     accessToken?: string;
+    isNewUser?: boolean;
     error?: string;
     user: {
       id: string;
@@ -22,12 +23,14 @@ declare module 'next-auth' {
     accessToken: string;
     refreshToken: string;
     accessTokenExpiresIn: number;
+    isNewUser?: boolean;
   }
 }
 
 // JWT 토큰에 추가할 타입 선언
 declare module 'next-auth/jwt' {
   interface JWT {
+    isNewUser?: boolean;
     accessToken?: string;
     refreshToken?: string;
     accessTokenExpiresIn?: number; // access_token 만료 시간 (초 단위)

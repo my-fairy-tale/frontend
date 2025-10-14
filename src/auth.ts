@@ -1,6 +1,9 @@
 import NextAuth from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
+import Kakao from 'next-auth/providers/kakao';
+import { ApiResponse, OAuthData } from './types/api';
 
 // Cache for ongoing refresh requests to prevent race conditions
 let refreshPromise: Promise<JWT> | null = null;
@@ -94,6 +97,14 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
         }
       },
     }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    Kakao({
+      clientId: process.env.KAKAO_CLIENT_ID!,
+      clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+    }),
   ],
   session: {
     strategy: 'jwt',
@@ -104,6 +115,45 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
     error: '/auth/error',
   },
   callbacks: {
+    async signIn({ user, account }) {
+      // OAuth 로그인인 경우
+      if (account?.provider === 'google' || account?.provider === 'kakao') {
+        try {
+          const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/oauth/simple`;
+          const response = await fetch(backendUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: user.email,
+              name: user.name,
+              provider: account.provider,
+              providerId: account.providerAccountId,
+            }),
+          });
+
+          const data: ApiResponse<OAuthData> = await response.json();
+
+          if (response.ok && data.data) {
+            // 백엔드에서 받은 토큰을 user 객체에 추가
+            user.accessToken = data.data.accessToken;
+            user.refreshToken = data.data.refreshToken;
+            user.accessTokenExpiresIn = data.data.accessTokenExpiresIn;
+            user.id = data.data.id.toString();
+            return true;
+          }
+
+          return false;
+        } catch (err) {
+          console.error('OAuth backend error:', err);
+          return false;
+        }
+      }
+
+      // Credentials 로그인인 경우
+      return true;
+    },
     async jwt({ token, user }) {
       // 초기 로그인
       if (user) {
@@ -144,6 +194,7 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
     },
     async session({ session, token }) {
       // JWT callback이 null을 반환하면 이 callback은 호출되지 않음
+
       session.user = token.user;
       session.accessToken = token.accessToken;
 
