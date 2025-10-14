@@ -1,7 +1,7 @@
 'use client';
 
 import { getQueryClient } from '@/lib/get-query-client';
-import { ApiResponse, BookData, BookStatus } from '@/types/api';
+import { BookStatus } from '@/types/api';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -9,6 +9,7 @@ import { FaTrash } from 'react-icons/fa';
 import useModalStore from '@/store/use-modal-store';
 import MyBookDeleteModal from '@/components/ui/modal/mybook-delete-modal';
 import Image from 'next/image';
+import { bookDetailOption } from '../book/book-detail-option';
 
 interface BookThumbnailProps {
   id: string;
@@ -40,31 +41,7 @@ const BookThumbnail = ({
 
   const handleMouseEnter = () => {
     if (session?.accessToken) {
-      queryClient.prefetchQuery({
-        queryKey: ['book-detail', id],
-        queryFn: async () => {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${id}`,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${session.accessToken}`,
-              },
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch book');
-          }
-
-          const data: ApiResponse<BookData> = await response.json();
-          if (data?.code === 'BOOK_2002' && data.data) {
-            return data.data;
-          }
-          throw new Error(data?.message || '책을 찾을 수 없습니다.');
-        },
-        staleTime: 5 * 60 * 1000,
-      });
+      queryClient.prefetchQuery(bookDetailOption(id));
     }
   };
 
