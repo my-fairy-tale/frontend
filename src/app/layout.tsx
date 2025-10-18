@@ -28,7 +28,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="flex flex-col items-center h-screen antialiased pt-16">
+      <body className="flex flex-col items-center min-h-screen antialiased pt-16">
         <AuthProvider session={session}>
           <ReactQueryProvider>
             <Header />

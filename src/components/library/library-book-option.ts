@@ -1,7 +1,10 @@
 import { ApiResponse, LibraryBookListData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 
-export const libraryBookOption = (sort: string = 'latest') =>
+export const libraryBookOption = (
+  sort: string = 'latest',
+  accessToken?: string
+) =>
   infiniteQueryOptions({
     queryKey: ['library-books', sort],
     queryFn: async ({ pageParam = 0 }) => {
@@ -10,6 +13,7 @@ export const libraryBookOption = (sort: string = 'latest') =>
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
       });

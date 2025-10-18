@@ -7,6 +7,8 @@ import { FaPlus } from 'react-icons/fa';
 import { getQueryClient } from '@/lib/get-query-client';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { libraryBookOption } from '@/components/library/library-book-option';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 
 export default async function LibraryPage({
   searchParams,
@@ -14,12 +16,21 @@ export default async function LibraryPage({
   searchParams: Promise<{ sort?: string }>;
 }) {
   const params = await searchParams;
-  const sort = params?.sort || 'latest';
+
+  // sort 파라미터가 없으면 기본값으로 리디렉션
+  if (!params.sort) {
+    redirect('/library?sort=latest');
+  }
+
+  const sort = params.sort;
+  const session = await auth();
 
   const queryClient = getQueryClient();
 
   try {
-    await queryClient.prefetchInfiniteQuery(libraryBookOption(sort));
+    await queryClient.prefetchInfiniteQuery(
+      libraryBookOption(sort, session?.accessToken)
+    );
   } catch (err) {
     console.error('library books prefetch failed', err);
   }
@@ -48,7 +59,7 @@ export default async function LibraryPage({
 
       <HydrationBoundary state={dehydratedState}>
         <Suspense fallback={<LoadingSkeleton />}>
-          <LibraryBookList currentSort={sort} />
+          <LibraryBookList />
         </Suspense>
       </HydrationBoundary>
     </main>
