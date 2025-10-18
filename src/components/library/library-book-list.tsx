@@ -5,16 +5,17 @@ import { useInView } from 'react-intersection-observer';
 import { Fragment, useEffect } from 'react';
 import LibraryBookCard from './library-book-card';
 import { libraryBookOption } from './library-book-option';
+import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 
-interface LibraryBookListProps {
-  currentSort: string;
-}
-
-const LibraryBookList = ({ currentSort }: LibraryBookListProps) => {
+const LibraryBookList = () => {
   const { ref, inView } = useInView({ threshold: 0.5 });
+  const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const currentSort = searchParams.get('sort') || 'latest';
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery(libraryBookOption(currentSort));
+    useInfiniteQuery(libraryBookOption(currentSort, session?.accessToken));
 
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -27,7 +28,7 @@ const LibraryBookList = ({ currentSort }: LibraryBookListProps) => {
 
   return (
     <>
-      <div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {/* Loading Skeleton */}
         {isLoading &&
           [...Array(10)].map((_, i) => (
