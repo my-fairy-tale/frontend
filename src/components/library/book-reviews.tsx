@@ -12,6 +12,7 @@ import { libraryDetailReviewOption } from './library-detail-review-option';
 import { useInView } from 'react-intersection-observer';
 import { ReviewData } from '@/types/api';
 import useUserStore from '@/store/use-user-store';
+import { useSearchParams } from 'next/navigation';
 
 interface BookReviewsProps {
   slug: string;
@@ -19,6 +20,8 @@ interface BookReviewsProps {
 
 export default function BookReviews({ slug }: BookReviewsProps) {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const currentSort = searchParams.get('sort') || 'latest';
   const { data: session } = useSession();
   const { user } = useUserStore();
 
@@ -101,6 +104,9 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       queryClient.invalidateQueries({
         queryKey: ['library-detail-book', slug],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['library-books', currentSort],
+      });
     },
   });
 
@@ -150,6 +156,9 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       });
       queryClient.invalidateQueries({
         queryKey: ['library-detail-book', slug],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['library-books', currentSort],
       });
     },
   });
