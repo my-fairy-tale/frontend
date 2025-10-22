@@ -6,7 +6,7 @@ export const libraryBookOption = (
   accessToken?: string
 ) =>
   infiniteQueryOptions({
-    queryKey: ['library-books', sort],
+    queryKey: ['library-books', sort, !!accessToken],
     queryFn: async ({ pageParam = 0 }) => {
       const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/library/posts?page=${pageParam}&size=5&sort=${sort}`;
       const response = await fetch(backendUrl, {
