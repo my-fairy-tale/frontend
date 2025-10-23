@@ -149,6 +149,7 @@ export interface LibraryBooksData {
   authorName: string;
   viewCount: number;
   likeCount: number;
+  isLiked: boolean | null;
   createdAt: string;
   book: {
     bookId: string;
@@ -249,6 +250,46 @@ export interface MyReviewsListData {
   pageSize: number;
   isFirst: number;
   isLast: number;
+}
+
+export interface MyLikesData {
+  likeId: number;
+  postId: number;
+  postTitle: string;
+  thumbnailUrl: string;
+  likedAt: string;
+  post: {
+    postId: number;
+    title: string;
+    content: string;
+    authorId: number;
+    authorName: string;
+    viewCount: number;
+    likeCount: number;
+    isLiked: boolean;
+    createdAt: string;
+    book: {
+      bookId: string;
+      originalTitle: string;
+      thumbnailUrl: string;
+      targetAge: number;
+      theme: BookTheme;
+      style: BookStyle;
+      totalPages: number;
+    };
+    averageRating?: number;
+    reviewCount: number;
+  };
+}
+
+export interface MyLikesListData {
+  likes: MyLikesData[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+  isLast: boolean;
+  isFirst: boolean;
 }
 
 export interface MyBookMarkedPostsListData {

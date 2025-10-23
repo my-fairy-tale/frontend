@@ -1,15 +1,19 @@
 import { ApiResponse, LibraryBookListData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
 
-export const libraryBookOption = (sort: string = 'latest') =>
+export const libraryBookOption = (
+  sort: string = 'latest',
+  accessToken?: string
+) =>
   infiniteQueryOptions({
-    queryKey: ['library-books', sort],
+    queryKey: ['library-books', sort, !!accessToken],
     queryFn: async ({ pageParam = 0 }) => {
       const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/library/posts?page=${pageParam}&size=5&sort=${sort}`;
       const response = await fetch(backendUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
       });

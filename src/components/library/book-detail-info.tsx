@@ -19,7 +19,7 @@ import { useSession } from 'next-auth/react';
 import { ApiResponse, LikeData, PostDetailData } from '@/types/api';
 import useUserStore from '@/store/use-user-store';
 import useModalStore from '@/store/use-modal-store';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import DeletePostModal from '@/components/ui/modal/delete-post-modal';
 import EditPostModal from '@/components/ui/modal/edit-post-modal';
 
@@ -30,10 +30,12 @@ interface BookDetailInfoProps {
 export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   const [isLiked, setIsLiked] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentSort = searchParams.get('sort') || 'latest';
   const { data: session } = useSession();
   const { user } = useUserStore();
   const { openModal, closeModal } = useModalStore();
-  const router = useRouter();
 
   const {
     data: postData,
@@ -122,6 +124,9 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
       queryClient.invalidateQueries({
         queryKey: ['library-detail-book', variables.postId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['library-books', currentSort],
+      });
     },
   });
 
@@ -203,6 +208,9 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
       queryClient.invalidateQueries({
         queryKey: ['library-detail-book', slug],
       });
+      queryClient.invalidateQueries({
+        queryKey: ['library-books', currentSort],
+      });
     },
   });
 
@@ -266,6 +274,9 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ['library-detail-book', slug],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['library-books', currentSort],
       });
     },
   });

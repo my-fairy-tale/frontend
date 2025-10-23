@@ -1,8 +1,7 @@
 'use client';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { FaBookmark, FaStar, FaChevronDown } from 'react-icons/fa';
-import { bookmarkedPostsOption } from './bookmarked-posts-option';
+import { FaHeart, FaStar, FaChevronDown } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -11,6 +10,7 @@ import { libraryDetailBookOption } from '@/components/library/library-detail-boo
 import { formatRelativeTime } from '@/lib/date-utils';
 import { libraryDetailLikeOption } from '../library/library-detail-like-option';
 import { libraryDetailReviewOption } from '../library/library-detail-review-option';
+import { likedPostsOption } from './liked-posts-option';
 
 // Section Wrapper 컴포넌트
 const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -18,8 +18,8 @@ const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
     <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
-          <FaBookmark className="text-yellow-500" />
-          북마크한 게시물
+          <FaHeart className="text-red-500" />
+          좋아요한 게시물
         </h2>
         <span className="text-sm text-gray-500">전체 보기</span>
       </div>
@@ -28,18 +28,18 @@ const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const BookmarkedPosts = () => {
+const LikedPosts = () => {
   const queryClient = getQueryClient();
   const { data: session } = useSession();
   const {
-    data: bookMarkedList,
+    data: likesList,
     error,
     fetchNextPage,
     hasNextPage,
     isLoading,
     isError,
     isFetchingNextPage,
-  } = useInfiniteQuery(bookmarkedPostsOption(session?.accessToken));
+  } = useInfiniteQuery(likedPostsOption(session?.accessToken));
 
   const handleMouseEnter = (postId: number) => {
     queryClient.prefetchQuery(libraryDetailBookOption(postId.toString()));
@@ -56,7 +56,7 @@ const BookmarkedPosts = () => {
     return (
       <SectionWrapper>
         <div className="w-full bg-gray-50 rounded-lg p-12 text-center opacity-60 animate-pulse">
-          <FaBookmark className="mx-auto text-gray-300 text-5xl mb-4" />
+          <FaHeart className="mx-auto text-gray-300 text-5xl mb-4" />
           <p className="text-gray-500 text-lg">불러오는 중...</p>
         </div>
       </SectionWrapper>
@@ -78,20 +78,19 @@ const BookmarkedPosts = () => {
     );
   }
 
-  const bookmarks =
-    bookMarkedList?.pages.flatMap((page) => page.bookmarks) || [];
+  const likes = likesList?.pages.flatMap((page) => page.likes) || [];
 
   // Empty 상태
-  if (bookmarks.length === 0) {
+  if (likes.length === 0) {
     return (
       <SectionWrapper>
         <div className="bg-gray-50 rounded-lg p-12 text-center">
-          <FaBookmark className="mx-auto text-gray-300 text-5xl mb-4" />
+          <FaHeart className="mx-auto text-gray-300 text-5xl mb-4" />
           <p className="text-gray-500 text-lg">
-            아직 북마크한 게시물이 없습니다
+            아직 좋아요한 게시물이 없습니다
           </p>
           <p className="text-gray-400 text-sm mt-2">
-            마음에 드는 게시물을 북마크해보세요
+            마음에 드는 게시물을 좋아요 해보세요
           </p>
         </div>
       </SectionWrapper>
@@ -102,18 +101,18 @@ const BookmarkedPosts = () => {
   return (
     <SectionWrapper>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-        {bookmarks.map((bookmark) => (
+        {likes.map((like) => (
           <Link
-            key={bookmark.bookMarkId}
-            href={`/library/${bookmark.postId}`}
-            onMouseEnter={() => handleMouseEnter(bookmark.postId)}
+            key={like.likeId}
+            href={`/library/${like.postId}`}
+            onMouseEnter={() => handleMouseEnter(like.postId)}
             className="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow border border-gray-100"
           >
             <div className="flex gap-4">
               <div className="relative w-24 h-32 rounded-lg flex-shrink-0 overflow-hidden bg-gray-100">
                 <Image
-                  src={bookmark.thumbnailUrl}
-                  alt={bookmark.postTitle}
+                  src={like.thumbnailUrl}
+                  alt={like.postTitle}
                   fill
                   className="object-cover"
                   sizes="96px"
@@ -121,23 +120,23 @@ const BookmarkedPosts = () => {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
-                  {bookmark.postTitle}
+                  {like.postTitle}
                 </h3>
                 <div className="flex items-center gap-2 mb-2">
                   <FaStar className="text-yellow-400 text-sm" />
                   <span className="text-sm text-gray-700">
-                    {bookmark.post.averageRating
-                      ? bookmark.post.averageRating.toFixed(1)
+                    {like.post.averageRating
+                      ? like.post.averageRating.toFixed(1)
                       : '0.0'}
                   </span>
                   <span className="text-xs text-gray-500">
-                    ({bookmark.post.reviewCount})
+                    ({like.post.reviewCount})
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span>{bookmark.post.authorName}</span>
+                  <span>{like.post.authorName}</span>
                   <span>•</span>
-                  <span>{formatRelativeTime(bookmark.bookMarkedAt)}</span>
+                  <span>{formatRelativeTime(like.likedAt)}</span>
                 </div>
               </div>
             </div>
@@ -160,4 +159,4 @@ const BookmarkedPosts = () => {
   );
 };
 
-export default BookmarkedPosts;
+export default LikedPosts;
