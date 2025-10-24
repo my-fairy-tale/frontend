@@ -4,6 +4,7 @@ import BookDisplay from './book-display';
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@tanstack/react-query';
 import { bookDetailOption } from './book-detail-option';
+import MobileBookDisplay from './mobile-book-display';
 
 export default function BookFetching({ slug }: { slug: string }) {
   const { data: session } = useSession();
@@ -18,5 +19,10 @@ export default function BookFetching({ slug }: { slug: string }) {
   if (!bookData) return <div>해당 책을 찾을 수 없습니다.</div>;
   if (error) return <div>오류: {error.message}</div>;
 
-  return <BookDisplay bookData={bookData} />;
+  return (
+    <>
+      <BookDisplay bookData={bookData} />
+      <MobileBookDisplay bookData={bookData} />
+    </>
+  );
 }

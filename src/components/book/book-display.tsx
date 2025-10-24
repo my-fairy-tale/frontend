@@ -127,7 +127,7 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   return (
     <div
       ref={fullscreenContainerRef}
-      className="w-full h-auto relative flex flex-col items-center justify-center bg-gray-100 p-4"
+      className="w-full h-auto relative hidden md:flex flex-col items-center justify-center bg-gray-100 p-4"
     >
       <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-8 text-center">
         {bookData.title}
