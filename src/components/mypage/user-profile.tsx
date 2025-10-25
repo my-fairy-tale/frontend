@@ -156,7 +156,7 @@ const UserProfile = () => {
       <section>
         <h2 className="text-xl font-semibold mb-4 text-gray-800">내 정보</h2>
         <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between space-x-6">
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center justify-between space-x-6">
             <FaUserCircle
               size={80}
               className="text-gray-300"
@@ -220,11 +220,13 @@ const UserProfile = () => {
           <div>
             {user.canCreateBookToday ? (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 whitespace-nowrap">
-                ✓ 오늘 책 생성 가능
+                <span className="hidden md:flex md:mr-1">✓ 오늘 책 </span>생성
+                가능
               </span>
             ) : (
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 whitespace-nowrap">
-                ✗ 오늘 책 생성 불가
+                <span className="hidden md:flex md:mr-1">✗ 오늘 책 </span>생성
+                불가
               </span>
             )}
           </div>

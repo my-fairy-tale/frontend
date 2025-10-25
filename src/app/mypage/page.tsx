@@ -6,6 +6,7 @@ import { auth } from '@/auth';
 import AccountSettings from '@/components/mypage/account-settings';
 import UserProfile from '@/components/mypage/user-profile';
 import MyBookList from '@/components/mypage/my-book-list';
+import MobileFooterInfo from '@/components/layout/mobile-footer-info';
 
 export default async function MyPage() {
   const queryClient = getQueryClient();
@@ -36,6 +37,8 @@ export default async function MyPage() {
 
         <AccountSettings accessToken={session?.accessToken} />
       </div>
+
+      <MobileFooterInfo />
     </main>
   );
 }

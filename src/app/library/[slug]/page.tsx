@@ -1,4 +1,5 @@
 import { auth } from '@/auth';
+import AdBannersWrapper from '@/components/ad/ad-banners-wrapper';
 import BookDetailInfo from '@/components/library/book-detail-info';
 import BookReviews from '@/components/library/book-reviews';
 import { libraryDetailBookOption } from '@/components/library/library-detail-book-option';
@@ -27,10 +28,13 @@ export default async function LibraryDetailPage(props: {
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <main className="w-full mx-auto p-6 md:p-8 my-8">
+    <main className="w-full mx-auto p-6 md:p-8">
       <HydrationBoundary state={dehydratedState}>
-        <BookDetailInfo slug={slug} />
-        <BookReviews slug={slug} />
+        <div className="flex flex-col gap-8 md:gap-12">
+          <BookDetailInfo slug={slug} />
+          <AdBannersWrapper />
+          <BookReviews slug={slug} />
+        </div>
       </HydrationBoundary>
     </main>
   );

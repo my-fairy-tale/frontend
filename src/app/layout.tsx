@@ -7,6 +7,7 @@ import GlobalModal from '@/components/ui/modal/global-modal';
 import ReactQueryProvider from '@/components/provider/react-query-provider';
 import AuthProvider from '@/components/provider/auth-provider';
 import { auth } from '@/auth';
+import MobileFooter from '@/components/layout/mobile-footer';
 
 export const metadata: Metadata = {
   title: 'my fairy tale',
@@ -28,12 +29,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="flex flex-col items-center min-h-screen antialiased pt-16">
+      <body className="flex flex-col items-center min-h-screen antialiased pt-16 pb-16">
         <AuthProvider session={session}>
           <ReactQueryProvider>
             <Header />
             {children}
             <GlobalModal />
+            <MobileFooter />
             <Footer />
           </ReactQueryProvider>
         </AuthProvider>
