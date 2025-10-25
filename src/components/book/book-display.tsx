@@ -3,9 +3,10 @@
 import { BookData } from '@/types/api';
 import { useEffect, useRef, useState } from 'react';
 import BookPage from '@/components/book/book-page';
+import AdBannersWrapper from '../ad/ad-banners-wrapper';
 
 // 2. 전체화면 아이콘 SVG 추가
-const FullscreenEnterIcon = () => (
+export const FullscreenEnterIcon = () => (
   <svg
     width="24"
     height="24"
@@ -19,7 +20,7 @@ const FullscreenEnterIcon = () => (
     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
   </svg>
 );
-const FullscreenExitIcon = () => (
+export const FullscreenExitIcon = () => (
   <svg
     width="24"
     height="24"
@@ -125,60 +126,63 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   };
 
   return (
-    <div
-      ref={fullscreenContainerRef}
-      className="w-full h-auto relative hidden md:flex flex-col items-center justify-center bg-gray-100 p-4"
-    >
-      <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-8 text-center">
-        {bookData.title}
-      </h1>
-
-      <div className="flex items-center gap-2 sm:gap-6 w-full max-w-7xl">
-        {/* 이전 페이지 버튼 */}
-        <button
-          onClick={goToPreviousPage}
-          disabled={currentPageIndex === 0}
-          className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-        >
-          &lt;
-        </button>
-
-        {/* 책 페이지 영역 - 2. 크기 고정 및 레이아웃 안정화 */}
-        <div className="flex-grow h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-2xl border border-gray-200">
-          <BookPage
-            pageData={leftPage}
-            position="left"
-            onPlayAudio={playTts}
-          />
-          <BookPage
-            pageData={rightPage}
-            position="right"
-            onPlayAudio={playTts}
-          />
-        </div>
-
-        {/* 다음 페이지 버튼 */}
-        <button
-          onClick={goToNextPage}
-          disabled={!rightPage || !bookData.pages[currentPageIndex + 2]} // 다음 펼칠 페이지가 있는지 확인
-          className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-        >
-          &gt;
-        </button>
-      </div>
-      <button
-        onClick={toggleFullscreen}
-        className="absolute bottom-0 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
+    <>
+      <div
+        ref={fullscreenContainerRef}
+        className="w-full h-auto relative hidden md:flex flex-col items-center justify-center bg-gray-100 p-4"
       >
-        {isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />}
-      </button>
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-800 mb-8 text-center">
+          {bookData.title}
+        </h1>
 
-      <audio
-        ref={audioRef}
-        controls
-        className="hidden"
-      />
-    </div>
+        <div className="flex items-center gap-2 sm:gap-6 w-full max-w-7xl">
+          {/* 이전 페이지 버튼 */}
+          <button
+            onClick={goToPreviousPage}
+            disabled={currentPageIndex === 0}
+            className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          >
+            &lt;
+          </button>
+
+          {/* 책 페이지 영역 - 2. 크기 고정 및 레이아웃 안정화 */}
+          <div className="flex-grow h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-2xl border border-gray-200">
+            <BookPage
+              pageData={leftPage}
+              position="left"
+              onPlayAudio={playTts}
+            />
+            <BookPage
+              pageData={rightPage}
+              position="right"
+              onPlayAudio={playTts}
+            />
+          </div>
+
+          {/* 다음 페이지 버튼 */}
+          <button
+            onClick={goToNextPage}
+            disabled={!rightPage || !bookData.pages[currentPageIndex + 2]} // 다음 펼칠 페이지가 있는지 확인
+            className="bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 text-3xl flex items-center justify-center shadow-lg transition hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+          >
+            &gt;
+          </button>
+        </div>
+        <button
+          onClick={toggleFullscreen}
+          className="absolute bottom-0 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
+        >
+          {isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />}
+        </button>
+
+        <audio
+          ref={audioRef}
+          controls
+          className="hidden"
+        />
+      </div>
+      <AdBannersWrapper />
+    </>
   );
 };
 

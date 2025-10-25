@@ -3,14 +3,43 @@
 import { BookData } from '@/types/api';
 import { useEffect, useRef, useState } from 'react';
 import BookPage from '@/components/book/book-page';
+import AdBannersWrapper from '../ad/ad-banners-wrapper';
+import { FullscreenEnterIcon, FullscreenExitIcon } from './book-display';
 
 const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const minSwipeDistance = 50; //최소 스와이프 거리
+
+  const toggleFullscreen = () => {
+    const elem = fullscreenContainerRef.current;
+    if (!elem) return;
+
+    if (!document.fullscreenElement) {
+      elem.requestFullscreen().catch((err) => {
+        alert(
+          `전체 화면 모드를 시작할 수 없습니다: ${err.message} (${err.name})`
+        );
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () =>
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   useEffect(() => {
     // 다음 페이지 미리 로드
@@ -91,7 +120,10 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
   };
 
   return (
-    <div className="w-full min-h-screen flex md:hidden flex-col bg-gray-100 pb-20">
+    <div
+      ref={fullscreenContainerRef}
+      className="w-full min-h-screen flex md:hidden flex-col bg-gray-100 pb-20"
+    >
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10 shadow-sm">
         <h1 className="text-xl font-bold text-gray-800 text-center">
@@ -112,6 +144,7 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
             position="left"
             onPlayAudio={playTts}
           />
+          <AdBannersWrapper />
         </div>
       </div>
 
@@ -157,6 +190,12 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
           </button>
         </div>
       </div>
+      <button
+        onClick={toggleFullscreen}
+        className="absolute bottom-0 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
+      >
+        {isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />}
+      </button>
 
       <audio
         ref={audioRef}
