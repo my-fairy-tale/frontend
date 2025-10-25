@@ -9,6 +9,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { libraryBookOption } from '@/components/library/library-book-option';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import AdBannersWrapper from '@/components/ad/ad-banners-wrapper';
 
 export default async function LibraryPage({
   searchParams,
@@ -38,8 +39,8 @@ export default async function LibraryPage({
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <main className="max-w-7xl mx-auto p-6 md:p-8 my-8">
-      <div className="w-full mb-6 flex items-end justify-between">
+    <main className="max-w-7xl mx-auto flex flex-col items-center gap-8 p-6 md:p-8">
+      <div className="w-full flex items-end justify-between">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 mb-3">동화 광장</h1>
           <p className="text-lg text-gray-600 max-md:hidden">
@@ -54,6 +55,8 @@ export default async function LibraryPage({
           <FaPlus />책 게시하기
         </Link>
       </div>
+
+      <AdBannersWrapper />
 
       <LibraryFilter currentSort={sort} />
 
