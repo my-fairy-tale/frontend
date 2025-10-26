@@ -1,14 +1,10 @@
 import AdBanner from './ad-banner';
+import { AD_CONFIG } from './ad-config';
 
 const AdBannerPC = () => {
-  const adUnit = 'DAN-QyqLwiahlSFDhmcA';
   return (
     <div className="hidden md:block w-full py-6 bg-gray-50">
-      <AdBanner
-        adUnit={adUnit}
-        width={728}
-        height={90}
-      />
+      <AdBanner {...AD_CONFIG.PC_BANNER} />
     </div>
   );
 };

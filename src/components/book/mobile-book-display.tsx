@@ -130,6 +130,7 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
           {bookData.title}
         </h1>
       </div>
+      <AdBannersWrapper />
 
       {/* 페이지 컨텐츠 */}
       <div
@@ -144,7 +145,6 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
             position="left"
             onPlayAudio={playTts}
           />
-          <AdBannersWrapper />
         </div>
       </div>
 

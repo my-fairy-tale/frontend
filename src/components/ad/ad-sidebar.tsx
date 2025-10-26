@@ -1,11 +1,11 @@
 import AdBanner from './ad-banner';
+import { AD_CONFIG } from './ad-config';
 
 interface AdSidebarProps {
   sticky?: boolean; // sticky 여부
 }
 
 const AdSidebar = ({ sticky = true }: AdSidebarProps) => {
-  const adUnit = 'DAN-8Fa5mGlEZJyUwI0K';
   return (
     <aside
       className={`hidden lg:block ${
@@ -13,11 +13,7 @@ const AdSidebar = ({ sticky = true }: AdSidebarProps) => {
       } w-[160px] flex-shrink-0`}
     >
       <div className="bg-gray-50 rounded-lg overflow-hidden">
-        <AdBanner
-          adUnit={adUnit}
-          width={160}
-          height={600}
-        />
+        <AdBanner {...AD_CONFIG.SIDEBAR_BANNER} />
       </div>
     </aside>
   );
