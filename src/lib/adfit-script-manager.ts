@@ -71,9 +71,10 @@ class AdfitScriptManager {
         if (this.script.onload) {
           // 기존 onload 래핑
           const originalOnload = this.script.onload;
+          const script = this.script; // null 체크를 위한 로컬 변수
           this.script.onload = (ev) => {
             if (typeof originalOnload === 'function') {
-              originalOnload.call(this.script, ev);
+              originalOnload.call(script, ev);
             }
             onExistingScriptLoad();
           };
