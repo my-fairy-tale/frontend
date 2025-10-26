@@ -1,3 +1,4 @@
+import AdBannersWrapper from '@/components/ad/ad-banners-wrapper';
 import CreateBookButton from '@/components/book/create-book-button';
 import BookThumbnail from '@/components/mypage/book-thumbnail';
 import { BookStatus } from '@/types/api';
@@ -32,22 +33,24 @@ const sampleBooks = [
 
 const BooksPage = () => {
   return (
-    <main className="p-8 md:p-12">
-      <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-        동화책 세상 📚
-      </h1>
-      <p className="text-lg text-gray-600 mb-8">
-        나만의 동화책을 만들거나 다른 친구들의 멋진 이야기를 구경해보세요!
-      </p>
-
-      <div className="my-10">
+    <main className="flex flex-col gap-8 p-8 md:p-12">
+      <section className="flex flex-col items-start gap-6">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+          동화책 세상 📚
+        </h1>
+        <p className="text-lg text-gray-600">
+          나만의 동화책을 만들거나 다른 친구들의 멋진 이야기를 구경해보세요!
+        </p>
         <CreateBookButton />
+      </section>
+
+      <div>
+        <hr className="my-10" />
+        <AdBannersWrapper />
       </div>
 
-      <hr className="my-12" />
-
-      <section>
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">
+      <section className="flex flex-col gap-6">
+        <h2 className="text-3xl font-bold text-gray-800">
           ✨ 완성된 동화책 구경하기
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
