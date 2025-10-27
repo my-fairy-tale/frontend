@@ -4,9 +4,7 @@ import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import Kakao from 'next-auth/providers/kakao';
 import { ApiResponse, OAuthData } from './types/api';
-
-// Cache for ongoing refresh requests to prevent race conditions
-let refreshPromise: Promise<JWT> | null = null;
+import RefreshTokenManager from './lib/refresh-token-manager';
 
 async function refreshAccessToken(token: JWT) {
   try {
@@ -173,24 +171,23 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
         return token;
       }
 
-      // If a refresh is already in progress, wait for it
-      if (refreshPromise) {
-        return await refreshPromise;
-      }
+      // Use RefreshTokenManager to prevent race conditions
+      try {
+        const refreshedToken = await RefreshTokenManager.getRefreshPromise(
+          () => refreshAccessToken(token)
+        );
 
-      // Start a new refresh and cache the promise
-      refreshPromise = refreshAccessToken(token).finally(() => {
-        refreshPromise = null;
-      });
+        if (refreshedToken.error) {
+          console.log('refreshToken error - invalidating session');
+          // Return null to invalidate session
+          return null;
+        }
 
-      const refreshedToken = await refreshPromise;
-      if (refreshedToken.error) {
-        console.log('refreshToken error - invalidating session');
-        // Return null to invalidate session
+        return refreshedToken;
+      } catch (error) {
+        console.error('Unexpected refresh error:', error);
         return null;
       }
-
-      return refreshedToken;
     },
     async session({ session, token }) {
       // JWT callback이 null을 반환하면 이 callback은 호출되지 않음
