@@ -359,7 +359,7 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
   return (
     <div
       onMouseEnter={handleMouseEnter}
-      className="bg-white w-full rounded-lg shadow-lg p-6 md:p-8"
+      className="bg-white w-full rounded-lg md:shadow-lg md:p-8"
     >
       <div className="flex flex-col md:flex-row gap-8">
         {/* 왼쪽: 책 표지 */}

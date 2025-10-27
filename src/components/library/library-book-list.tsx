@@ -27,7 +27,7 @@ const LibraryBookList = () => {
     !data || data.pages.length === 0 || data.pages[0].posts.length === 0;
 
   return (
-    <>
+    <section className="w-full flex flex-col">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
         {/* Loading Skeleton */}
         {isLoading &&
@@ -87,7 +87,7 @@ const LibraryBookList = () => {
           모든 동화책을 불러왔습니다.
         </p>
       )}
-    </>
+    </section>
   );
 };
 

@@ -222,7 +222,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
   const totalReviews = reviews?.pages[0].pageInfo.totalElements || 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <div className="bg-white rounded-lg md:shadow-lg md:p-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           리뷰 ({totalReviews})

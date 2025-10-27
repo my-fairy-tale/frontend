@@ -122,7 +122,7 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
   return (
     <div
       ref={fullscreenContainerRef}
-      className="w-full min-h-screen flex md:hidden flex-col bg-gray-100 pb-20"
+      className="w-full md:hidden flex flex-col bg-gray-100 pb-25"
     >
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10 shadow-sm">
@@ -149,7 +149,7 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
       </div>
 
       {/* 하단 내비게이션 */}
-      <div className="fixed bottom-20 left-0 right-0 p-4">
+      <div className="fixed bottom-16 left-0 right-0 p-4">
         <div className="flex items-center justify-between max-w-md mx-auto">
           {/* 이전 페이지 버튼 */}
           <button
@@ -192,7 +192,7 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
       </div>
       <button
         onClick={toggleFullscreen}
-        className="absolute bottom-0 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
+        className="absolute bottom-30 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
       >
         {isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />}
       </button>

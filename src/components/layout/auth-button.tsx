@@ -23,7 +23,17 @@ export default function AuthButton({ initialSession }: AuthButtonProps) {
 
   // Monitor session and auto-logout on expiration
   useEffect(() => {
+    console.log('🔍 Auth Debug:', {
+      status,
+      hasClientSession: !!clientSession,
+      hasInitialSession: !!initialSession,
+      wasAuthenticated: wasAuthenticated.current,
+      clientSessionExpires: clientSession?.expires,
+      timestamp: new Date().toISOString(),
+    });
+
     if (status === 'authenticated') {
+      console.log('✅ Authenticated - setting wasAuthenticated to true');
       wasAuthenticated.current = true;
     }
 
@@ -33,11 +43,17 @@ export default function AuthButton({ initialSession }: AuthButtonProps) {
       status === 'unauthenticated' &&
       !clientSession
     ) {
-      console.log('Session expired - auto logging out');
+      console.warn('⚠️ Auto logout triggered:', {
+        wasAuthenticated: wasAuthenticated.current,
+        status,
+        hasClientSession: !!clientSession,
+        hasInitialSession: !!initialSession,
+        timestamp: new Date().toISOString(),
+      });
       clearUser();
       signOut({ callbackUrl: '/auth/login' });
     }
-  }, [status, clientSession, clearUser]);
+  }, [status, clientSession, initialSession, clearUser]);
 
   const handleLogout = async () => {
     clearUser();
