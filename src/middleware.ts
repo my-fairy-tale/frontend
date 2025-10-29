@@ -6,6 +6,12 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
+  // /library에 sort 파라미터가 없으면 기본값으로 리다이렉트
+  if (nextUrl.pathname === '/library' && !nextUrl.searchParams.has('sort')) {
+    const url = new URL('/library?sort=latest', nextUrl);
+    return NextResponse.redirect(url);
+  }
+
   // 인증이 필요한 경로들
   const protectedRoutes = ['/books/create', '/mypage', '/admin', '/activity'];
   const isProtectedRoute = protectedRoutes.some((route) =>

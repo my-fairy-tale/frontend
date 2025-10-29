@@ -8,7 +8,6 @@ import { getQueryClient } from '@/lib/get-query-client';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { libraryBookOption } from '@/components/library/library-book-option';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import AdBannersWrapper from '@/components/ad/ad-banners-wrapper';
 
 export default async function LibraryPage({
@@ -17,13 +16,7 @@ export default async function LibraryPage({
   searchParams: Promise<{ sort?: string }>;
 }) {
   const params = await searchParams;
-
-  // sort 파라미터가 없으면 기본값으로 리디렉션
-  if (!params.sort) {
-    redirect('/library?sort=latest');
-  }
-
-  const sort = params.sort;
+  const sort = params.sort || 'latest';
   const session = await auth();
 
   const queryClient = getQueryClient();
