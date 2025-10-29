@@ -7,40 +7,31 @@ import { ApiResponse, OAuthData } from './types/api';
 import RefreshTokenManager from './lib/refresh-token-manager';
 
 async function refreshAccessToken(token: JWT) {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/reissue`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: token.refreshToken }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.data) {
-      throw new Error(data.message || 'Failed to refresh access token');
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/reissue`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: token.refreshToken }),
     }
-    console.log('refreshed token is success');
+  );
 
-    // 새로 발급받은 토큰으로 기존 token 객체를 업데이트
-    return {
-      ...token,
-      accessToken: data.data.accessToken as string,
-      accessTokenExpiresIn: Date.now() + data.data.accessTokenExpiresIn * 1000,
-      // 백엔드가 새 refresh token을 주면 업데이트, 아니면 기존 것 유지
-      refreshToken: (data.data.refreshToken as string) ?? token.refreshToken,
-      error: undefined,
-    };
-  } catch (error) {
-    console.error('RefreshAccessTokenError', error);
-    // 갱신 실패 시, 에러 정보를 포함하여 반환
-    return {
-      ...token,
-      error: 'RefreshAccessTokenError',
-    };
+  const data = await response.json();
+
+  if (!response.ok || !data.data) {
+    throw new Error(data.message || 'Failed to refresh access token');
   }
+  console.log('refreshed token is success');
+
+  // 새로 발급받은 토큰으로 기존 token 객체를 업데이트
+  return {
+    ...token,
+    accessToken: data.data.accessToken as string,
+    accessTokenExpiresIn: Date.now() + data.data.accessTokenExpiresIn * 1000,
+    // 백엔드가 새 refresh token을 주면 업데이트, 아니면 기존 것 유지
+    refreshToken: (data.data.refreshToken as string) ?? token.refreshToken,
+    error: undefined,
+  };
 }
 
 export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
@@ -177,15 +168,9 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
           () => refreshAccessToken(token)
         );
 
-        if (refreshedToken.error) {
-          console.log('refreshToken error - invalidating session');
-          // Return null to invalidate session
-          return null;
-        }
-
         return refreshedToken;
       } catch (error) {
-        console.error('Unexpected refresh error:', error);
+        console.error('refreshToken error - invalidating session', error);
         return null;
       }
     },

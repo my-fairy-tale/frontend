@@ -7,12 +7,16 @@
 class RefreshTokenManager {
   private static promise: Promise<unknown> | null = null;
   private static lastRefreshTime = 0;
+  private static lastFailureTime = 0;
 
   /** 동일 refresh 재시도 최소 간격 (2초) */
   private static MIN_REFRESH_INTERVAL = 2000;
 
   /** refresh 최대 대기 시간 (30초) */
   private static MAX_WAIT_TIME = 30000;
+
+  /** 실패 후 재시도 방지 시간 (5초) */
+  private static FAILURE_CACHE_TIME = 5000;
 
   /**
    * Refresh 요청을 관리하며 중복을 방지합니다.
@@ -28,6 +32,16 @@ class RefreshTokenManager {
    */
   static async getRefreshPromise<T>(refreshFn: () => Promise<T>): Promise<T> {
     const now = Date.now();
+
+    // 최근에 실패했다면 즉시 에러 반환 (불필요한 재시도 방지)
+    const timeSinceLastFailure = now - this.lastFailureTime;
+    if (this.lastFailureTime > 0 && timeSinceLastFailure < this.FAILURE_CACHE_TIME) {
+      console.log('⛔ Recent refresh failed, skipping retry', {
+        timeSinceLastFailure: `${timeSinceLastFailure}ms`,
+        willRetryIn: `${this.FAILURE_CACHE_TIME - timeSinceLastFailure}ms`,
+      });
+      throw new Error('Recent refresh attempt failed');
+    }
 
     // 진행 중인 refresh가 있으면 대기
     if (this.promise) {
@@ -54,10 +68,14 @@ class RefreshTokenManager {
     this.promise = refreshFn()
       .then((result) => {
         console.log('✅ Token refresh completed successfully');
+        // 성공 시 실패 시각 초기화
+        this.lastFailureTime = 0;
         return result;
       })
       .catch((error) => {
         console.error('❌ Token refresh failed:', error);
+        // 실패 시각 기록
+        this.lastFailureTime = Date.now();
         throw error;
       })
       .finally(() => {
@@ -77,6 +95,7 @@ class RefreshTokenManager {
   static reset() {
     this.promise = null;
     this.lastRefreshTime = 0;
+    this.lastFailureTime = 0;
     console.log('🔄 RefreshTokenManager reset');
   }
 
