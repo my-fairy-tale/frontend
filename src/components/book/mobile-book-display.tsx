@@ -8,6 +8,7 @@ import { FullscreenEnterIcon, FullscreenExitIcon } from './book-display';
 
 const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -64,18 +65,42 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
   }
 
   const currentPage = bookData.pages[currentPageIndex];
+  const nextPage = bookData.pages[currentPageIndex + 1] || null;
+  const prevPage = bookData.pages[currentPageIndex - 1] || null;
   const isFirstPage = currentPageIndex === 0;
   const isLastPage = currentPageIndex === bookData.pages.length - 1;
 
   const goToPreviousPage = () => {
-    if (!isFirstPage) {
-      setCurrentPageIndex((prev) => prev - 1);
+    if (!isFirstPage && !isAnimating) {
+      setIsAnimating(true);
+
+      // fade out
+      setTimeout(() => {
+        // 페이지 변경 (이미지 로딩 시작)
+        setCurrentPageIndex((prev) => prev - 1);
+
+        // 짧은 딜레이 후 fade in (이미지 로딩 시간 확보)
+        setTimeout(() => {
+          setIsAnimating(false);
+        }, 100);
+      }, 150);
     }
   };
 
   const goToNextPage = () => {
-    if (!isLastPage) {
-      setCurrentPageIndex((prev) => prev + 1);
+    if (!isLastPage && !isAnimating) {
+      setIsAnimating(true);
+
+      // fade out
+      setTimeout(() => {
+        // 페이지 변경 (이미지 로딩 시작)
+        setCurrentPageIndex((prev) => prev + 1);
+
+        // 짧은 딜레이 후 fade in (이미지 로딩 시간 확보)
+        setTimeout(() => {
+          setIsAnimating(false);
+        }, 100);
+      }, 150);
     }
   };
 
@@ -122,7 +147,7 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
   return (
     <div
       ref={fullscreenContainerRef}
-      className="w-full min-h-screen flex md:hidden flex-col bg-gray-100 pb-20"
+      className="w-full md:hidden flex flex-col bg-gray-100 pb-25"
     >
       {/* 헤더 */}
       <div className="bg-white border-b border-gray-200 p-4 sticky top-0 z-10 shadow-sm">
@@ -134,22 +159,51 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
 
       {/* 페이지 컨텐츠 */}
       <div
-        className="flex-1 flex items-center justify-center p-4"
+        className="flex-1 flex items-center justify-center p-4 relative"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div className="w-full max-w-md">
+        {/* 현재 페이지 (visible) */}
+        <div
+          className={`
+            w-full max-w-md
+            transition-all duration-200 ease-in-out
+            ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}
+          `}
+        >
           <BookPage
             pageData={currentPage}
             position="left"
             onPlayAudio={playTts}
           />
         </div>
+
+        {/* 다음 페이지 미리 렌더링 (hidden) */}
+        {nextPage && (
+          <div className="absolute top-0 left-0 opacity-0 pointer-events-none -z-10 w-full max-w-md">
+            <BookPage
+              pageData={nextPage}
+              position="left"
+              onPlayAudio={playTts}
+            />
+          </div>
+        )}
+
+        {/* 이전 페이지 미리 렌더링 (hidden) */}
+        {prevPage && (
+          <div className="absolute top-0 left-0 opacity-0 pointer-events-none -z-10 w-full max-w-md">
+            <BookPage
+              pageData={prevPage}
+              position="left"
+              onPlayAudio={playTts}
+            />
+          </div>
+        )}
       </div>
 
       {/* 하단 내비게이션 */}
-      <div className="fixed bottom-20 left-0 right-0 p-4">
+      <div className="fixed bottom-16 left-0 right-0 p-4">
         <div className="flex items-center justify-between max-w-md mx-auto">
           {/* 이전 페이지 버튼 */}
           <button
@@ -192,7 +246,7 @@ const MobileBookDisplay = ({ bookData }: { bookData: BookData }) => {
       </div>
       <button
         onClick={toggleFullscreen}
-        className="absolute bottom-0 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
+        className="absolute bottom-30 right-0 mb-4 mr-4 bg-white text-gray-800 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center shadow-lg transition hover:bg-gray-200 flex-shrink-0"
       >
         {isFullscreen ? <FullscreenExitIcon /> : <FullscreenEnterIcon />}
       </button>

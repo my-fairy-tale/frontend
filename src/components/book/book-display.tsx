@@ -37,6 +37,7 @@ export const FullscreenExitIcon = () => (
 
 const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // --- 👇 전체화면 기능을 위한 코드 추가 ---
@@ -44,13 +45,46 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
+    console.log('🔍 Preload Debug:', {
+      currentPageIndex,
+      currentPages: `[${currentPageIndex}, ${currentPageIndex + 1}]`,
+      preloadStart: currentPageIndex + 2,
+      preloadEnd: currentPageIndex + 2 + 4,
+      timestamp: new Date().toISOString(),
+    });
+
     // 현재 페이지 이후의 이미지들을 미리 로드합니다.
     const preloadNextImages = (startIndex: number) => {
       // 예를 들어, 다음 4개 페이지의 이미지를 미리 로드
-      const pagesToPreload = bookData.pages.slice(startIndex, startIndex + 4);
-      pagesToPreload.forEach((page) => {
+      const pagesToPreload = bookData.pages.slice(
+        startIndex + 2,
+        startIndex + 4
+      );
+
+      pagesToPreload.forEach((page, idx) => {
         if (page.imageUrl) {
+          const pageIndex = startIndex + idx;
           const img = new Image();
+          const startTime = performance.now();
+
+          console.log(`⏳ Start preloading [${pageIndex}]:`, page.imageUrl);
+
+          img.onload = () => {
+            const loadTime = performance.now() - startTime;
+            console.log(`✅ Preload complete [${pageIndex}]:`, {
+              url: page.imageUrl,
+              loadTime: `${loadTime.toFixed(0)}ms`,
+            });
+          };
+
+          img.onerror = () => {
+            const loadTime = performance.now() - startTime;
+            console.error(`❌ Preload failed [${pageIndex}]:`, {
+              url: page.imageUrl,
+              loadTime: `${loadTime.toFixed(0)}ms`,
+            });
+          };
+
           img.src = page.imageUrl;
         }
       });
@@ -95,12 +129,49 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
       ? bookData.pages[currentPageIndex + 1]
       : null;
 
-  const goToPreviousPage = () =>
-    setCurrentPageIndex((prev) => Math.max(0, prev - 2));
-  const goToNextPage = () =>
-    setCurrentPageIndex((prev) =>
-      Math.min(bookData.pages.length - 2, prev + 2)
-    );
+  // 다음 페이지 (미리 렌더링용)
+  const nextLeftPage = bookData.pages[currentPageIndex + 2] || null;
+  const nextRightPage = bookData.pages[currentPageIndex + 3] || null;
+
+  // 이전 페이지 (미리 렌더링용)
+  const prevLeftPage = bookData.pages[currentPageIndex - 2] || null;
+  const prevRightPage = bookData.pages[currentPageIndex - 1] || null;
+
+  const goToPreviousPage = () => {
+    if (isAnimating) return; // 애니메이션 중 중복 클릭 방지
+
+    setIsAnimating(true);
+
+    // fade out
+    setTimeout(() => {
+      // 페이지 변경 (이미지 로딩 시작)
+      setCurrentPageIndex((prev) => Math.max(0, prev - 2));
+
+      // 짧은 딜레이 후 fade in (이미지 로딩 시간 확보)
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 100);
+    }, 150);
+  };
+
+  const goToNextPage = () => {
+    if (isAnimating) return; // 애니메이션 중 중복 클릭 방지
+
+    setIsAnimating(true);
+
+    // fade out
+    setTimeout(() => {
+      // 페이지 변경 (이미지 로딩 시작)
+      setCurrentPageIndex((prev) =>
+        Math.min(bookData.pages.length - 2, prev + 2)
+      );
+
+      // 짧은 딜레이 후 fade in (이미지 로딩 시간 확보)
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 100);
+    }, 150);
+  };
 
   const playTts = (audioUrl: string) => {
     if (audioRef.current) {
@@ -145,18 +216,63 @@ const BookDisplay = ({ bookData }: { bookData: BookData }) => {
             &lt;
           </button>
 
-          {/* 책 페이지 영역 - 2. 크기 고정 및 레이아웃 안정화 */}
-          <div className="flex-grow h-full grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-2xl border border-gray-200">
-            <BookPage
-              pageData={leftPage}
-              position="left"
-              onPlayAudio={playTts}
-            />
-            <BookPage
-              pageData={rightPage}
-              position="right"
-              onPlayAudio={playTts}
-            />
+          {/* 책 페이지 영역 - relative 컨테이너 */}
+          <div className="flex-grow h-full relative">
+            {/* 현재 페이지 (visible) */}
+            <div
+              className={`
+                grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-2xl border border-gray-200
+                transition-all duration-200 ease-in-out
+                ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}
+              `}
+            >
+              <BookPage
+                pageData={leftPage}
+                position="left"
+                onPlayAudio={playTts}
+              />
+              <BookPage
+                pageData={rightPage}
+                position="right"
+                onPlayAudio={playTts}
+              />
+            </div>
+
+            {/* 다음 페이지 미리 렌더링 (hidden) */}
+            {(nextLeftPage || nextRightPage) && (
+              <div className="absolute top-0 left-0 opacity-0 pointer-events-none -z-10 w-full h-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 sm:p-6">
+                  <BookPage
+                    pageData={nextLeftPage}
+                    position="left"
+                    onPlayAudio={playTts}
+                  />
+                  <BookPage
+                    pageData={nextRightPage}
+                    position="right"
+                    onPlayAudio={playTts}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 이전 페이지 미리 렌더링 (hidden) */}
+            {(prevLeftPage || prevRightPage) && (
+              <div className="absolute top-0 left-0 opacity-0 pointer-events-none -z-10 w-full h-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 sm:p-6">
+                  <BookPage
+                    pageData={prevLeftPage}
+                    position="left"
+                    onPlayAudio={playTts}
+                  />
+                  <BookPage
+                    pageData={prevRightPage}
+                    position="right"
+                    onPlayAudio={playTts}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 다음 페이지 버튼 */}

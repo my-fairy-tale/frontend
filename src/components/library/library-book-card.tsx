@@ -171,8 +171,8 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
         </div>
 
         {/* 정보 */}
-        <div className="flex-1 flex flex-col">
-          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-blue-600 transition-colors">
+        <div className="flex-1 flex flex-col md:max-w-[188.36px]">
+          <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 mb-1 group-hover:text-blue-600 transition-colors">
             {post.title}
           </h3>
 

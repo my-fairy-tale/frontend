@@ -117,6 +117,9 @@ const MyBookList = () => {
       console.error('책 삭제 실패:', error);
       alert('책 삭제에 실패했습니다. 다시 시도해주세요.');
     },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['myBooksInfinite'] });
+    },
   });
 
   const { mutate: updateBookVisibility } = useMutation({

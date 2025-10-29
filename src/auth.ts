@@ -4,45 +4,34 @@ import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import Kakao from 'next-auth/providers/kakao';
 import { ApiResponse, OAuthData } from './types/api';
-
-// Cache for ongoing refresh requests to prevent race conditions
-let refreshPromise: Promise<JWT> | null = null;
+import RefreshTokenManager from './lib/refresh-token-manager';
 
 async function refreshAccessToken(token: JWT) {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/reissue`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: token.refreshToken }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data.data) {
-      throw new Error(data.message || 'Failed to refresh access token');
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/reissue`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: token.refreshToken }),
     }
-    console.log('refreshed token is success');
+  );
 
-    // 새로 발급받은 토큰으로 기존 token 객체를 업데이트
-    return {
-      ...token,
-      accessToken: data.data.accessToken as string,
-      accessTokenExpiresIn: Date.now() + data.data.accessTokenExpiresIn * 1000,
-      // 백엔드가 새 refresh token을 주면 업데이트, 아니면 기존 것 유지
-      refreshToken: (data.data.refreshToken as string) ?? token.refreshToken,
-      error: undefined,
-    };
-  } catch (error) {
-    console.error('RefreshAccessTokenError', error);
-    // 갱신 실패 시, 에러 정보를 포함하여 반환
-    return {
-      ...token,
-      error: 'RefreshAccessTokenError',
-    };
+  const data = await response.json();
+
+  if (!response.ok || !data.data) {
+    throw new Error(data.message || 'Failed to refresh access token');
   }
+  console.log('refreshed token is success');
+
+  // 새로 발급받은 토큰으로 기존 token 객체를 업데이트
+  return {
+    ...token,
+    accessToken: data.data.accessToken as string,
+    accessTokenExpiresIn: Date.now() + data.data.accessTokenExpiresIn * 1000,
+    // 백엔드가 새 refresh token을 주면 업데이트, 아니면 기존 것 유지
+    refreshToken: (data.data.refreshToken as string) ?? token.refreshToken,
+    error: undefined,
+  };
 }
 
 export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
@@ -173,24 +162,17 @@ export const { handlers, signIn, signOut, unstable_update, auth } = NextAuth({
         return token;
       }
 
-      // If a refresh is already in progress, wait for it
-      if (refreshPromise) {
-        return await refreshPromise;
-      }
+      // Use RefreshTokenManager to prevent race conditions
+      try {
+        const refreshedToken = await RefreshTokenManager.getRefreshPromise(
+          () => refreshAccessToken(token)
+        );
 
-      // Start a new refresh and cache the promise
-      refreshPromise = refreshAccessToken(token).finally(() => {
-        refreshPromise = null;
-      });
-
-      const refreshedToken = await refreshPromise;
-      if (refreshedToken.error) {
-        console.log('refreshToken error - invalidating session');
-        // Return null to invalidate session
+        return refreshedToken;
+      } catch (error) {
+        console.error('refreshToken error - invalidating session', error);
         return null;
       }
-
-      return refreshedToken;
     },
     async session({ session, token }) {
       // JWT callback이 null을 반환하면 이 callback은 호출되지 않음
