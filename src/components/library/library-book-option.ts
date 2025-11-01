@@ -1,5 +1,6 @@
 import { ApiResponse, LibraryBookListData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
+import ApiFetch from '@/lib/api';
 
 export const libraryBookOption = (
   sort: string = 'latest',
@@ -8,21 +9,15 @@ export const libraryBookOption = (
   infiniteQueryOptions({
     queryKey: ['library-books', sort, !!accessToken],
     queryFn: async ({ pageParam = 0 }) => {
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/library/posts?page=${pageParam}&size=5&sort=${sort}`;
-      const response = await fetch(backendUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      const data: ApiResponse<LibraryBookListData> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/library/posts?page=${pageParam}&size=5&sort=${sort}`,
+        {
+          method: 'GET',
+          ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
         },
-        ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
-      });
+        accessToken
+      );
 
-      if (!response.ok) {
-        throw new Error('책 데이터를 불러올 수 없습니다');
-      }
-
-      const data: ApiResponse<LibraryBookListData> = await response.json();
       if (!data.data) {
         throw new Error('책 데이터가 없습니다.');
       }

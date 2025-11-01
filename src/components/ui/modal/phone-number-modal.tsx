@@ -7,6 +7,7 @@ import { UserProfileData } from '@/types/api';
 import useModalStore from '@/store/use-modal-store';
 import useUserStore from '@/store/use-user-store';
 import { formatPhoneNumber, validatePhoneNumber } from '@/lib/phone-utils';
+import ApiFetch from '@/lib/api';
 
 interface PhoneNumberModalProps {
   onConfirm: () => void;
@@ -32,21 +33,15 @@ const PhoneNumberModal = ({ onConfirm }: PhoneNumberModalProps) => {
         throw new Error('인증 정보가 없습니다.');
       }
 
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/me`;
-      const response = await fetch(backendUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
+      const data = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/me`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ name, phoneNumber }),
         },
-        body: JSON.stringify({ name, phoneNumber }),
-      });
+        session.accessToken
+      );
 
-      if (!response.ok) {
-        throw new Error('프로필 업데이트에 실패했습니다.');
-      }
-
-      const data = await response.json();
       return data.data;
     },
     onMutate: async () => {

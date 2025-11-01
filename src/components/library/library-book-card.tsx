@@ -17,6 +17,7 @@ import { libraryDetailReviewOption } from './library-detail-review-option';
 import { InfiniteData, useMutation } from '@tanstack/react-query';
 import { libraryBookOption } from './library-book-option';
 import { useSearchParams } from 'next/navigation';
+import ApiFetch from '@/lib/api';
 
 interface LibraryBookCardProps {
   post: LibraryBooksData;
@@ -30,34 +31,22 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
 
   const { mutate: toggleLike } = useMutation({
     mutationFn: async () => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('로그인이 필요합니다.');
-        }
-
-        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${post.postId}/likes`;
-        const response = await fetch(backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('좋아요 요청에 실패했습니다.');
-        }
-
-        const data: ApiResponse<LikeData> = await response.json();
-        if (!data.data) {
-          throw new Error('좋아요 데이터가 없습니다.');
-        }
-
-        return data.data;
-      } catch (err) {
-        console.error('toggle like failed', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('로그인이 필요합니다.');
       }
+
+      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${post.postId}/likes`;
+      const data = await ApiFetch<ApiResponse<LikeData>>(
+        backendUrl,
+        { method: 'POST' },
+        session.accessToken
+      );
+
+      if (!data.data) {
+        throw new Error('좋아요 데이터가 없습니다.');
+      }
+
+      return data.data;
     },
     onMutate: async () => {
       await queryClient.cancelQueries({

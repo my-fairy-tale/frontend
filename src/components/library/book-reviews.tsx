@@ -13,6 +13,7 @@ import { useInView } from 'react-intersection-observer';
 import { ReviewData } from '@/types/api';
 import useUserStore from '@/store/use-user-store';
 import { useSearchParams } from 'next/navigation';
+import ApiFetch, { ApiFetchError } from '@/lib/api';
 
 interface BookReviewsProps {
   slug: string;
@@ -55,32 +56,32 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       isAnonymous: boolean;
     }) => {
       const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}/reviews`;
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-        body: JSON.stringify({
-          rating,
-          comment,
-          isAnonymous,
-        }),
-      });
 
-      if (!response.ok) {
-        if (response.status === 400) {
+      try {
+        const data = await ApiFetch<{ code: string; message?: string }>(
+          backendUrl,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              rating,
+              comment,
+              isAnonymous,
+            }),
+          },
+          session?.accessToken
+        );
+
+        if (data.code !== 'REVIEW_2001') {
+          throw new Error(data?.message || '리뷰 등록에 실패했습니다.');
+        }
+
+        return data;
+      } catch (error) {
+        if (error instanceof ApiFetchError && error.status === 400) {
           throw new Error('나의 글에는 리뷰를 작성할 수 없습니다.');
         }
-        throw new Error('리뷰 등록에 실패했습니다.');
+        throw error;
       }
-
-      const data = await response.json();
-      if (data.code !== 'REVIEW_2001') {
-        throw new Error(data?.message || '리뷰 등록에 실패했습니다.');
-      }
-
-      return data;
     },
     onSuccess: () => {
       alert('리뷰가 성공적으로 등록되었습니다!');
@@ -121,24 +122,18 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       isAnonymous: boolean;
     }) => {
       const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}/reviews`;
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
+      return await ApiFetch(
+        backendUrl,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            rating,
+            comment,
+            isAnonymous,
+          }),
         },
-        body: JSON.stringify({
-          rating,
-          comment,
-          isAnonymous,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('리뷰 수정에 실패했습니다.');
-      }
-
-      return response.json();
+        session?.accessToken
+      );
     },
     onSuccess: () => {
       alert('리뷰가 성공적으로 수정되었습니다!');

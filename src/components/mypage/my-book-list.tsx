@@ -12,6 +12,7 @@ import {
 import { useInView } from 'react-intersection-observer';
 import { useSession } from 'next-auth/react';
 import { myBookOption } from './my-book-option';
+import ApiFetch from '@/lib/api';
 
 const MyBookList = () => {
   const queryClient = useQueryClient();
@@ -67,34 +68,22 @@ const MyBookList = () => {
 
   const { mutate: deleteBook } = useMutation({
     mutationFn: async ({ bookId }: { bookId: string }) => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to delete book');
-        }
-
-        const data: ApiResponse<null> = await response.json();
-        if (data.code !== 'BOOK_2005') {
-          throw new Error(data.message || '책 삭제에 실패했습니다.');
-        }
-        return bookId;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
       }
+
+      const data: ApiResponse<null> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}`,
+        {
+          method: 'DELETE',
+        },
+        session.accessToken
+      );
+
+      if (data.code !== 'BOOK_2005') {
+        throw new Error(data.message || '책 삭제에 실패했습니다.');
+      }
+      return bookId;
     },
     onSuccess: (bookId) => {
       // Remove the deleted book from the cache
@@ -130,35 +119,23 @@ const MyBookList = () => {
       bookId: string;
       newStatus: 'PUBLIC' | 'PRIVATE';
     }) => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}/visibility`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-            body: JSON.stringify({ visibility: newStatus }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch my books');
-        }
-
-        const data: ApiResponse<null> = await response.json();
-        if (data.code !== 'BOOK_2006') {
-          throw new Error('not my books');
-        }
-        return data.data;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
       }
+
+      const data: ApiResponse<null> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}/visibility`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ visibility: newStatus }),
+        },
+        session.accessToken
+      );
+
+      if (data.code !== 'BOOK_2006') {
+        throw new Error('not my books');
+      }
+      return data.data;
     },
 
     onSuccess: (data, variables) => {

@@ -1,22 +1,14 @@
 import { ApiResponse, ReviewListData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
+import ApiFetch from '@/lib/api';
 
 const fetchLibraryReviewDetail = async (postId: string, pageParam: number) => {
-  const response = await fetch(
+  const data: ApiResponse<ReviewListData> = await ApiFetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/reviews?page=${pageParam}&size=4`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
     }
   );
-
-  if (!response.ok) {
-    throw new Error('책을 불러올 수 없습니다.');
-  }
-
-  const data: ApiResponse<ReviewListData> = await response.json();
 
   if (data?.code === 'REVIEW_2002' && data.data) {
     return data.data;

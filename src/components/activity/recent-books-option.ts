@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { ApiResponse, RecentBooksData } from '@/types/api';
+import ApiFetch from '@/lib/api';
 
 export const recentBookOption = (accessToken?: string) =>
   queryOptions({
@@ -9,22 +10,14 @@ export const recentBookOption = (accessToken?: string) =>
         throw new Error('인증 정보가 없습니다.');
       }
 
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/recent`;
-      const response = await fetch(backendUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+      const data: ApiResponse<RecentBooksData[]> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/recent`,
+        {
+          method: 'GET',
+          ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
         },
-        // 서버에서는 캐시 사용 안 함
-        ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
-      });
-
-      if (!response.ok) {
-        throw new Error('기록을 불러올 수 없습니다.');
-      }
-
-      const data: ApiResponse<RecentBooksData[]> = await response.json();
+        accessToken
+      );
 
       if (data?.code === 'BOOK_2008' && data.data) {
         return data.data;

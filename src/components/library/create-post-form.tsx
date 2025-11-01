@@ -11,6 +11,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { ApiResponse, MyBooksData, PostDetailData } from '@/types/api';
+import ApiFetch from '@/lib/api';
 
 export const fetchMyBooks = async ({
   pageParam = 0,
@@ -19,21 +20,14 @@ export const fetchMyBooks = async ({
   pageParam?: number;
   accessToken: string;
 }) => {
-  const response = await fetch(
+  const data: ApiResponse<MyBooksData> = await ApiFetch(
     `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/my?status=COMPLETED&page=${pageParam}&size=4`,
     {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
+    },
+    accessToken
   );
-  if (!response.ok) {
-    throw new Error('책 데이터를 불러올 수 없습니다.');
-  }
 
-  const data: ApiResponse<MyBooksData> = await response.json();
   if (!data.data) {
     throw new Error('책 데이터가 없습니다.');
   }
@@ -82,37 +76,27 @@ export default function CreatePostForm() {
       title: string;
       content: string;
     }) => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`;
-        const response = await fetch(backendUrl, {
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
+      }
+
+      const data: ApiResponse<PostDetailData> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts`,
+        {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.accessToken}`,
-          },
           body: JSON.stringify({
             bookId,
             title,
             content,
           }),
-        });
+        },
+        session.accessToken
+      );
 
-        if (!response.ok) {
-          throw new Error('Failed to create post');
-        }
-
-        const data: ApiResponse<PostDetailData> = await response.json();
-        if (data.code !== 'POST_2001') {
-          throw new Error(data.message || '게시글 생성에 실패했습니다.');
-        }
-        return data;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (data.code !== 'POST_2001') {
+        throw new Error(data.message || '게시글 생성에 실패했습니다.');
       }
+      return data;
     },
     onError: (err) => {
       console.error('게시글 등록 실패', err);

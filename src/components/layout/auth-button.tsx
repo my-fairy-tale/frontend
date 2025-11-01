@@ -6,6 +6,7 @@ import useUserStore from '@/store/use-user-store';
 import { Session } from 'next-auth';
 import { ApiResponse } from '@/types/api';
 import { useEffect, useRef } from 'react';
+import ApiFetch from '@/lib/api';
 
 interface AuthButtonProps {
   initialSession: Session | null;
@@ -61,21 +62,14 @@ export default function AuthButton({ initialSession }: AuthButtonProps) {
     // Call backend logout API to invalidate refresh token
     if (session?.accessToken) {
       try {
-        const response = await fetch(
+        const data: ApiResponse<null> = await ApiFetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/logout`,
           {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
+          },
+          session.accessToken
         );
-
-        if (response.ok) {
-          const data: ApiResponse<null> = await response.json();
-          console.log('Backend logout successful:', data.message);
-        }
+        console.log('Backend logout successful:', data.message);
       } catch (error) {
         console.error('Backend logout failed:', error);
         // Continue with frontend logout even if backend fails

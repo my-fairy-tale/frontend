@@ -1,11 +1,30 @@
 import { RequestInit } from 'next/dist/server/web/spec-extension/request';
 
-// client에서 공통으로 사용할 apiFetch함수
+// API 에러 인터페이스
+interface ApiErrorData {
+  code?: string;
+  message?: string;
+}
+
+// 커스텀 API 에러 클래스
+export class ApiFetchError extends Error {
+  code?: string;
+  status: number;
+
+  constructor(status: number, message: string, code?: string) {
+    super(message);
+    this.name = 'ApiFetchError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// client/server 공통으로 사용할 apiFetch 함수
 async function ApiFetch<T>(
   path: string,
   options: RequestInit = {},
   accessToken?: string
-): Promise<T | null> {
+): Promise<T> {
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
   };
@@ -15,10 +34,10 @@ async function ApiFetch<T>(
   }
 
   const mergedOptions: RequestInit = {
-    ...options, // 사용자가 전달한 옵션을 먼저 적용
+    ...options,
     headers: {
-      ...defaultHeaders, // 기본 헤더 적용
-      ...options.headers, // 사용자가 전달한 헤더로 덮어쓰기
+      ...defaultHeaders,
+      ...options.headers,
     },
   };
 
@@ -26,26 +45,31 @@ async function ApiFetch<T>(
     const response = await fetch(path, mergedOptions);
 
     if (!response.ok) {
-      const errorData = await response
+      const errorData: ApiErrorData = await response
         .json()
         .catch(() => ({ message: response.statusText }));
-      throw new Error(
-        `API Error: ${response.status} ${
-          errorData.message || response.statusText
-        }`
+
+      throw new ApiFetchError(
+        response.status,
+        errorData.message || response.statusText,
+        errorData.code
       );
     }
 
     // 응답 본문이 없는 경우 (e.g., 204 No Content)를 대비
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.indexOf('application/json') !== -1) {
-      return response.json() as Promise<T>;
+      return response.json();
     } else {
-      return null;
+      // JSON이 아닌 경우 빈 객체 반환 (타입 안정성 유지)
+      return {} as T;
     }
   } catch (error) {
+    // ApiFetchError는 그대로 던지고, 다른 에러는 로깅 후 재던지기
+    if (error instanceof ApiFetchError) {
+      throw error;
+    }
     console.error('Fetch Error:', error);
-    // 에러를 다시 던져서 호출한 쪽에서 처리할 수 있게 함
     throw error;
   }
 }

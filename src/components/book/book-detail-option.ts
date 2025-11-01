@@ -1,30 +1,19 @@
 import { queryOptions } from '@tanstack/react-query';
 import { ApiResponse, BookData } from '@/types/api';
+import ApiFetch from '@/lib/api';
 
 export const bookDetailOption = (slug: string, accessToken?: string) =>
   queryOptions({
     queryKey: ['book-detail', slug],
     queryFn: async () => {
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${slug}`;
-
-      const response = await fetch(backendUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          // 인증이 필요한 경우에만 헤더 추가
-          ...(accessToken && {
-            Authorization: `Bearer ${accessToken}`,
-          }),
+      const data: ApiResponse<BookData> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${slug}`,
+        {
+          method: 'GET',
+          ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
         },
-        // 서버에서는 캐시 사용 안 함
-        ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
-      });
-
-      if (!response.ok) {
-        throw new Error('책을 불러올 수 없습니다.');
-      }
-
-      const data: ApiResponse<BookData> = await response.json();
+        accessToken
+      );
 
       if (data?.code === 'BOOK_2002' && data.data) {
         return data.data;

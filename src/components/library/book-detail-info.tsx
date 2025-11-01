@@ -22,6 +22,7 @@ import useModalStore from '@/store/use-modal-store';
 import { useRouter, useSearchParams } from 'next/navigation';
 import DeletePostModal from '@/components/ui/modal/delete-post-modal';
 import EditPostModal from '@/components/ui/modal/edit-post-modal';
+import ApiFetch from '@/lib/api';
 
 interface BookDetailInfoProps {
   slug: string;
@@ -50,33 +51,23 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
 
   const { mutate: updateLikeStatus } = useMutation({
     mutationFn: async ({ postId }: { postId: string }) => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/likes`;
-        const response = await fetch(backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('좋아요 상태를 업데이트할 수 없습니다.');
-        }
-
-        const data: ApiResponse<LikeData> = await response.json();
-        if (data.code !== 'LIKE_2001') {
-          throw new Error(data?.message || '좋아요 상태 업데이트 실패');
-        }
-
-        return data.data;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
       }
+
+      const data: ApiResponse<LikeData> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/likes`,
+        {
+          method: 'POST',
+        },
+        session.accessToken
+      );
+
+      if (data.code !== 'LIKE_2001') {
+        throw new Error(data?.message || '좋아요 상태 업데이트 실패');
+      }
+
+      return data.data;
     },
     onMutate: async (variables) => {
       const { postId } = variables;
@@ -138,34 +129,24 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
       title: string;
       content: string;
     }) => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`;
-        const response = await fetch(backendUrl, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-          body: JSON.stringify({ title, content }),
-        });
-
-        if (!response.ok) {
-          throw new Error('게시글을 수정할 수 없습니다.');
-        }
-
-        const data: ApiResponse<PostDetailData> = await response.json();
-        if (data.code !== 'POST_2002') {
-          throw new Error(data?.message || '게시글 수정 실패');
-        }
-
-        return data.data;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
       }
+
+      const data: ApiResponse<PostDetailData> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ title, content }),
+        },
+        session.accessToken
+      );
+
+      if (data.code !== 'POST_2002') {
+        throw new Error(data?.message || '게시글 수정 실패');
+      }
+
+      return data.data;
     },
     onMutate: async (variables) => {
       const { title, content } = variables;
@@ -216,34 +197,23 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
 
   const { mutate: deleteBookDetail, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-
-        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`;
-        const response = await fetch(backendUrl, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('게시글을 삭제할 수 없습니다.');
-        }
-
-        const data: ApiResponse<null> = await response.json();
-        if (data.code !== 'POST_2003') {
-          throw new Error(data?.message || '게시글 삭제 실패');
-        }
-
-        return data.data;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
       }
+
+      const data: ApiResponse<null> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}`,
+        {
+          method: 'DELETE',
+        },
+        session.accessToken
+      );
+
+      if (data.code !== 'POST_2003') {
+        throw new Error(data?.message || '게시글 삭제 실패');
+      }
+
+      return data.data;
     },
     onMutate: async () => {
       await queryClient.cancelQueries({

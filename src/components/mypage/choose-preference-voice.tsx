@@ -6,6 +6,7 @@ import { ApiResponse, UserProfileData } from '@/types/api';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { VOICE_MODELS } from '@/lib/voice-models';
+import ApiFetch from '@/lib/api';
 
 const ChoosePreferenceVoice = ({
   voiceModel,
@@ -35,23 +36,18 @@ const ChoosePreferenceVoice = ({
         throw new Error('인증 정보가 없습니다.');
       }
 
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/voice-preference`;
-      const response = await fetch(backendUrl, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+      const data: ApiResponse<null> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/voice-preference`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            defaultTtsVoice: newVoiceModel,
+            defaultTtsSpeed: newTtsSpeed,
+          }),
         },
-        body: JSON.stringify({
-          defaultTtsVoice: newVoiceModel,
-          defaultTtsSpeed: newTtsSpeed,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update voice preference');
-      }
+        accessToken
+      );
 
-      const data: ApiResponse<null> = await response.json();
       return data.data;
     },
     onMutate: async ({ newVoiceModel, newTtsSpeed }) => {
