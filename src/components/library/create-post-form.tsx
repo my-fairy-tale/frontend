@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -115,6 +115,19 @@ export default function CreatePostForm() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const scroll = useCallback((direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 400;
+      const newScrollLeft =
+        scrollRef.current.scrollLeft +
+        (direction === 'left' ? -scrollAmount : scrollAmount);
+      scrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
   // Scroll observer to fetch next page
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -134,31 +147,18 @@ export default function CreatePostForm() {
     return () => scrollContainer.removeEventListener('scroll', handleScroll);
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 400;
-      const newScrollLeft =
-        scrollRef.current.scrollLeft +
-        (direction === 'left' ? -scrollAmount : scrollAmount);
-      scrollRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth',
-      });
-    }
-  };
-
   // Flatten all books from infinite query pages
   const allBooks = myBooks?.pages.flatMap((page) => page.books) ?? [];
 
-  const handleBookSelect = (bookId: string) => {
+  const handleBookSelect = useCallback((bookId: string) => {
     const book = allBooks.find((b) => b.id === bookId);
     setSelectedBookId(bookId);
     if (book) {
       setTitle(book.title);
     }
-  };
+  }, [allBooks]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedBookId) {
@@ -167,7 +167,7 @@ export default function CreatePostForm() {
     }
 
     createPost({ bookId: selectedBookId, title, content });
-  };
+  }, [selectedBookId, title, content, createPost]);
 
   return (
     <form

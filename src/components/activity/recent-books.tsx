@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { getQueryClient } from '@/lib/get-query-client';
 import { bookDetailOption } from '../book/book-detail-option';
 import { formatRelativeTime } from '@/lib/date-utils';
+import { useCallback } from 'react';
 
 const SectionWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -35,9 +36,16 @@ const RecentBooks = () => {
     error,
   } = useQuery(recentBookOption(session?.accessToken));
 
-  const handleMouseEnter = (bookId: string) => {
-    queryClient.prefetchQuery(bookDetailOption(bookId));
-  };
+  const handleMouseEnter = useCallback(
+    (bookId: string) => {
+      queryClient.prefetchQuery(bookDetailOption(bookId));
+    },
+    [queryClient]
+  );
+
+  const handleClick = useCallback(() => {
+    queryClient.fetchQuery({ queryKey: ['recent-book'] });
+  }, [queryClient]);
 
   if (isLoading) {
     return (
@@ -86,9 +94,7 @@ const RecentBooks = () => {
             key={book.bookId}
             href={`/books/${book.bookId}`}
             onMouseEnter={() => handleMouseEnter(book.bookId)}
-            onClick={() => {
-              queryClient.fetchQuery({ queryKey: ['recent-book'] });
-            }}
+            onClick={handleClick}
             className="bg-white rounded-lg p-4 transition-shadow"
           >
             <div className="relative aspect-[3/4] rounded-lg mb-3 overflow-hidden hover:shadow-lg bg-gray-100">

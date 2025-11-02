@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
 import {
@@ -159,7 +159,8 @@ export default function BookReviews({ slug }: BookReviewsProps) {
   });
 
   const { ref, inView } = useInView({
-    threshold: 0.5,
+    threshold: 0.1,
+    rootMargin: '100px',
   });
 
   useEffect(() => {
@@ -168,7 +169,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
     if (!session) {
@@ -181,9 +182,9 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       comment: newComment,
       isAnonymous: false,
     });
-  };
+  }, [session, submitReview, newRating, newComment]);
 
-  const handleEditReview = (e: React.FormEvent) => {
+  const handleEditReview = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
     if (!session) {
@@ -196,19 +197,19 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       comment: editComment,
       isAnonymous: false,
     });
-  };
+  }, [session, updateReview, editRating, editComment]);
 
-  const startEditing = (review: ReviewData) => {
+  const startEditing = useCallback((review: ReviewData) => {
     setIsEditing(true);
     setEditRating(review.rating);
     setEditComment(review.comment);
-  };
+  }, []);
 
-  const cancelEditing = () => {
+  const cancelEditing = useCallback(() => {
     setIsEditing(false);
     setEditComment('');
     setEditRating(5);
-  };
+  }, []);
 
   if (isLoading) return <p>리뷰 목록을 불러오는 중...</p>;
   if (isError) return <p>오류가 발생했습니다: {error.message}</p>;

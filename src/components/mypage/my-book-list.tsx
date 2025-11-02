@@ -1,7 +1,7 @@
 'use client';
 
 import { ApiResponse, BookStatus, MyBooksData } from '@/types/api';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import BookThumbnail from './book-thumbnail';
 import {
   InfiniteData,
@@ -39,7 +39,8 @@ const MyBookList = () => {
   });
 
   const { ref, inView } = useInView({
-    threshold: 0.5, // 요소가 50% 보이면 콜백 실행
+    threshold: 0.1,
+    rootMargin: '100px',
   });
 
   useEffect(() => {
@@ -59,12 +60,12 @@ const MyBookList = () => {
     session?.accessToken,
   ]);
 
-  const handleStatusChange = async (
+  const handleStatusChange = useCallback(async (
     bookId: string,
     newStatus: 'PUBLIC' | 'PRIVATE'
   ) => {
     updateBookVisibility({ bookId, newStatus });
-  };
+  }, [updateBookVisibility]);
 
   const { mutate: deleteBook } = useMutation({
     mutationFn: async ({ bookId }: { bookId: string }) => {

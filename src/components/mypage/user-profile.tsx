@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FaUserCircle } from 'react-icons/fa';
 import { MdEdit, MdCheck, MdClose } from 'react-icons/md';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { userProfileOption } from './user-profile-option';
 import useUserStore from '@/store/use-user-store';
 import { useSession } from 'next-auth/react';
@@ -101,23 +101,19 @@ const UserProfile = () => {
     }
   }, [closeModal, openModal, user?.phoneNumber]);
 
-  if (isLoading) return <p>사용자 정보를 불러오는 중입니다...</p>;
-  if (isError)
-    return <p>사용자 정보를 불러오는데 실패했습니다: {String(error)}</p>;
-  if (!user) return <p>사용자 정보를 찾을 수 없습니다.</p>;
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatPhoneNumber(e.target.value);
     setNewPhoneNumber(formatted);
-  };
+  }, []);
 
-  const handleEditClick = () => {
+  const handleEditClick = useCallback(() => {
+    if (!user) return;
     setNewName(user.name);
     setNewPhoneNumber(user.phoneNumber || '');
     setIsEditing(true);
-  };
+  }, [user]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     // Validate name
     if (!newName.trim()) {
       alert('이름을 입력해주세요.');
@@ -136,13 +132,18 @@ const UserProfile = () => {
     }
 
     updateProfile({ name: newName.trim(), phoneNumber: newPhoneNumber.trim() });
-  };
+  }, [newName, newPhoneNumber, updateProfile]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsEditing(false);
     setNewName('');
     setNewPhoneNumber('');
-  };
+  }, []);
+
+  if (isLoading) return <p>사용자 정보를 불러오는 중입니다...</p>;
+  if (isError)
+    return <p>사용자 정보를 불러오는데 실패했습니다: {String(error)}</p>;
+  if (!user) return <p>사용자 정보를 찾을 수 없습니다.</p>;
 
   const displayName = storedUser?.name || user.name;
 

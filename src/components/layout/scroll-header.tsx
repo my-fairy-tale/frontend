@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ScrollHeaderProps {
   children: React.ReactNode;
@@ -8,28 +8,41 @@ interface ScrollHeaderProps {
 
 export default function ScrollHeader({ children }: ScrollHeaderProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollY = useRef(0);
+
+  const handleScroll = useCallback(() => {
+    const currentScrollY = window.scrollY;
+
+    // 스크롤을 아래로 내릴 때 (100px 이상 스크롤 시에만)
+    if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+      setIsVisible(false);
+    }
+    // 스크롤을 위로 올릴 때
+    else {
+      setIsVisible(true);
+    }
+
+    lastScrollY.current = currentScrollY;
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      // 스크롤을 아래로 내릴 때
-      if (currentScrollY > lastScrollY) {
-        setIsVisible(false);
+    // Throttle을 적용하여 100ms마다 한 번만 실행
+    let ticking = false;
+
+    const throttledScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
       }
-      // 스크롤을 위로 올릴 때
-      else {
-        setIsVisible(true);
-      }
-      // 현재 스크롤 위치를 마지막 위치로 업데이트
-      setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', throttledScroll, { passive: true });
 
-    // 컴포넌트가 언마운트될 때 이벤트 리스너 제거 (메모리 누수 방지)
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+    return () => window.removeEventListener('scroll', throttledScroll);
+  }, [handleScroll]);
 
   return (
     <div

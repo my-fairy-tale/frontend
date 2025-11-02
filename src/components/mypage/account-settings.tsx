@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback } from 'react';
 import { signOut } from 'next-auth/react';
 import useModalStore from '@/store/use-modal-store';
 import useUserStore from '@/store/use-user-store';
@@ -14,17 +15,7 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
   const { openModal, closeModal } = useModalStore();
   const { clearUser } = useUserStore();
 
-  const handleWithdrawClick = () => {
-    openModal(
-      <UserWithdrawModal
-        onConfirm={handleWithdrawConfirm}
-        onCancel={closeModal}
-      />,
-      { size: 'lg' }
-    );
-  };
-
-  const handleWithdrawConfirm = async () => {
+  const handleWithdrawConfirm = useCallback(async () => {
     try {
       if (!accessToken) {
         throw new Error('인증 정보가 없습니다.');
@@ -51,7 +42,17 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
       alert('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
       throw error;
     }
-  };
+  }, [accessToken, closeModal, clearUser]);
+
+  const handleWithdrawClick = useCallback(() => {
+    openModal(
+      <UserWithdrawModal
+        onConfirm={handleWithdrawConfirm}
+        onCancel={closeModal}
+      />,
+      { size: 'lg' }
+    );
+  }, [openModal, closeModal, handleWithdrawConfirm]);
 
   return (
     <section>

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ApiResponse,
@@ -34,14 +34,14 @@ export default function CreateBookForm() {
   const [notification, setNotification] = useState({ message: '', type: '' });
   const router = useRouter();
 
-  const handleChange = (
+  const handleChange = useCallback((
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setNotification({ message: '', type: '' }); // 이전 알림 초기화
@@ -89,7 +89,7 @@ export default function CreateBookForm() {
     } finally {
       setIsLoading(false); // 성공/실패 여부와 관계없이 로딩 상태 해제
     }
-  };
+  }, [formData, targetAge, theme, style, voiceModel, ttsSpeed, session?.accessToken, router]);
 
   return (
     <form onSubmit={handleSubmit}>

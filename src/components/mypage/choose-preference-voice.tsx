@@ -4,7 +4,7 @@ import { getQueryClient } from '@/lib/get-query-client';
 import useUserStore from '@/store/use-user-store';
 import { ApiResponse, UserProfileData } from '@/types/api';
 import { useMutation } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { VOICE_MODELS } from '@/lib/voice-models';
 import ApiFetch from '@/lib/api';
 
@@ -82,12 +82,12 @@ const ChoosePreferenceVoice = ({
     },
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     patchVoicePreference({
       newVoiceModel: selectedVoice,
       newTtsSpeed: ttsSpeed,
     });
-  };
+  }, [patchVoicePreference, selectedVoice, ttsSpeed]);
 
   return (
     <div className="space-y-4">

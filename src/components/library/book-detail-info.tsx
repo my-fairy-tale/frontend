@@ -9,7 +9,7 @@ import {
   FaTrash,
   FaEdit,
 } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { libraryDetailBookOption } from './library-detail-book-option';
 import { libraryDetailLikeOption } from '@/components/library/library-detail-like-option';
@@ -257,26 +257,25 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
     }
   }, [likeData]);
 
-  if (isLoading) return <p>책을 불러오는 중 입니다...</p>;
-  if (isError) return <p>책을 불러오는데 실패했습니다: {String(error)}</p>;
-  if (!postData) return <p>책을 찾을 수 없습니다.</p>;
+  const handleMouseEnter = useCallback(() => {
+    if (postData) {
+      queryClient.prefetchQuery(
+        bookDetailOption(postData.book.bookId, session?.accessToken)
+      );
+    }
+  }, [postData, queryClient, session?.accessToken]);
 
-  const handleMouseEnter = () => {
-    queryClient.prefetchQuery(
-      bookDetailOption(postData.book.bookId, session?.accessToken)
-    );
-  };
-
-  const handleLike = async () => {
+  const handleLike = useCallback(async () => {
     if (!session?.accessToken) {
       alert('좋아요를 하려면 로그인이 필요합니다.');
       return;
     }
     updateLikeStatus({ postId: slug });
     setIsLiked(!isLiked);
-  };
+  }, [session?.accessToken, updateLikeStatus, slug, isLiked]);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
+    if (!postData) return;
     // TODO: 공유 기능 구현
     if (navigator.share) {
       navigator.share({
@@ -289,9 +288,13 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
       navigator.clipboard.writeText(window.location.href);
       alert('링크가 복사되었습니다!');
     }
-  };
+  }, [postData]);
 
-  const handleDeleteClick = () => {
+  const handleDeleteConfirm = useCallback(async () => {
+    deleteBookDetail();
+  }, [deleteBookDetail]);
+
+  const handleDeleteClick = useCallback(() => {
     if (!postData) return;
     openModal(
       <DeletePostModal
@@ -301,13 +304,13 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
       />,
       { size: 'sm' }
     );
-  };
+  }, [postData, openModal, closeModal, handleDeleteConfirm]);
 
-  const handleDeleteConfirm = async () => {
-    deleteBookDetail();
-  };
+  const handleEditConfirm = useCallback(async (title: string, content: string) => {
+    updateBookDetail({ title, content });
+  }, [updateBookDetail]);
 
-  const handleEditClick = () => {
+  const handleEditClick = useCallback(() => {
     if (!postData) return;
     openModal(
       <EditPostModal
@@ -318,11 +321,11 @@ export default function BookDetailInfo({ slug }: BookDetailInfoProps) {
       />,
       { size: 'md' }
     );
-  };
+  }, [postData, openModal, closeModal, handleEditConfirm]);
 
-  const handleEditConfirm = async (title: string, content: string) => {
-    updateBookDetail({ title, content });
-  };
+  if (isLoading) return <p>책을 불러오는 중 입니다...</p>;
+  if (isError) return <p>책을 불러오는데 실패했습니다: {String(error)}</p>;
+  if (!postData) return <p>책을 찾을 수 없습니다.</p>;
 
   const isAuthor = user && postData && user.id === postData.authorId;
 
