@@ -62,7 +62,7 @@ async function ApiFetch<T>(
       return response.json();
     } else {
       // JSON이 아닌 경우 빈 객체 반환 (타입 안정성 유지)
-      return {} as T;
+      throw new ApiFetchError(response.status, '응답이 JSON 형식이 아닙니다.');
     }
   } catch (error) {
     // ApiFetchError는 그대로 던지고, 다른 에러는 로깅 후 재던지기
