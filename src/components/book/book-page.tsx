@@ -9,6 +9,13 @@ interface BookPageProps {
 }
 
 function BookPage({ pageData, position, onPlayAudio }: BookPageProps) {
+  const handlePageClick = useCallback(() => {
+    // pageData가 있고 audioUrl이 있을 때만 부모의 함수를 호출
+    if (pageData?.audioUrl) {
+      onPlayAudio(pageData.audioUrl);
+    }
+  }, [pageData, onPlayAudio]);
+
   if (!pageData) {
     // 오른쪽 페이지가 없을 때 보여줄 UI
     return (
@@ -17,13 +24,6 @@ function BookPage({ pageData, position, onPlayAudio }: BookPageProps) {
       </div>
     );
   }
-
-  const handlePageClick = useCallback(() => {
-    // pageData가 있고 audioUrl이 있을 때만 부모의 함수를 호출
-    if (pageData?.audioUrl) {
-      onPlayAudio(pageData.audioUrl);
-    }
-  }, [pageData, onPlayAudio]);
 
   return (
     <div

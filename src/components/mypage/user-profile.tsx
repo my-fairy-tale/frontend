@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { userProfileOption } from './user-profile-option';
 import useUserStore from '@/store/use-user-store';
 import { useSession } from 'next-auth/react';
-import { UserProfileData } from '@/types/api';
+import { ApiResponse, UserProfileData } from '@/types/api';
 import ChoosePreferenceVoice from './choose-preference-voice';
 import useModalStore from '@/store/use-modal-store';
 import PhoneNumberModal from '../ui/modal/phone-number-modal';
@@ -41,7 +41,7 @@ const UserProfile = () => {
         throw new Error('인증 정보가 없습니다.');
       }
 
-      const data = await ApiFetch(
+      const data: ApiResponse<UserProfileData> = await ApiFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/me`,
         {
           method: 'PUT',
@@ -101,10 +101,13 @@ const UserProfile = () => {
     }
   }, [closeModal, openModal, user?.phoneNumber]);
 
-  const handlePhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setNewPhoneNumber(formatted);
-  }, []);
+  const handlePhoneChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const formatted = formatPhoneNumber(e.target.value);
+      setNewPhoneNumber(formatted);
+    },
+    []
+  );
 
   const handleEditClick = useCallback(() => {
     if (!user) return;

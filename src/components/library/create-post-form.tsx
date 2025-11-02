@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
@@ -115,19 +115,6 @@ export default function CreatePostForm() {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = useCallback((direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 400;
-      const newScrollLeft =
-        scrollRef.current.scrollLeft +
-        (direction === 'left' ? -scrollAmount : scrollAmount);
-      scrollRef.current.scrollTo({
-        left: newScrollLeft,
-        behavior: 'smooth',
-      });
-    }
-  }, []);
-
   // Scroll observer to fetch next page
   useEffect(() => {
     const scrollContainer = scrollRef.current;
@@ -148,15 +135,21 @@ export default function CreatePostForm() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Flatten all books from infinite query pages
-  const allBooks = myBooks?.pages.flatMap((page) => page.books) ?? [];
+  const allBooks = useMemo(
+    () => myBooks?.pages.flatMap((page) => page.books) ?? [],
+    [myBooks]
+  );
 
-  const handleBookSelect = useCallback((bookId: string) => {
-    const book = allBooks.find((b) => b.id === bookId);
-    setSelectedBookId(bookId);
-    if (book) {
-      setTitle(book.title);
-    }
-  }, [allBooks]);
+  const handleBookSelect = useCallback(
+    (bookId: string) => {
+      const book = allBooks.find((b) => b.id === bookId);
+      setSelectedBookId(bookId);
+      if (book) {
+        setTitle(book.title);
+      }
+    },
+    [allBooks]
+  );
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();

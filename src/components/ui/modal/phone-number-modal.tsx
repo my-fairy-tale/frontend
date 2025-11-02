@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
-import { UserProfileData } from '@/types/api';
+import { ApiResponse, UserProfileData } from '@/types/api';
 import useModalStore from '@/store/use-modal-store';
 import useUserStore from '@/store/use-user-store';
 import { formatPhoneNumber, validatePhoneNumber } from '@/lib/phone-utils';
@@ -33,7 +33,7 @@ const PhoneNumberModal = ({ onConfirm }: PhoneNumberModalProps) => {
         throw new Error('인증 정보가 없습니다.');
       }
 
-      const data = await ApiFetch(
+      const data: ApiResponse<UserProfileData> = await ApiFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/me`,
         {
           method: 'PUT',

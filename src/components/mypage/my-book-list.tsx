@@ -60,13 +60,6 @@ const MyBookList = () => {
     session?.accessToken,
   ]);
 
-  const handleStatusChange = useCallback(async (
-    bookId: string,
-    newStatus: 'PUBLIC' | 'PRIVATE'
-  ) => {
-    updateBookVisibility({ bookId, newStatus });
-  }, [updateBookVisibility]);
-
   const { mutate: deleteBook } = useMutation({
     mutationFn: async ({ bookId }: { bookId: string }) => {
       if (!session?.accessToken) {
@@ -164,6 +157,13 @@ const MyBookList = () => {
       alert('상태 변경에 실패했습니다. 다시 시도해주세요.');
     },
   });
+
+  const handleStatusChange = useCallback(
+    async (bookId: string, newStatus: 'PUBLIC' | 'PRIVATE') => {
+      updateBookVisibility({ bookId, newStatus });
+    },
+    [updateBookVisibility]
+  );
 
   if (isLoading) return <p>책 목록을 불러오는 중...</p>;
   if (isError) return <p>오류가 발생했습니다: {error.message}</p>;

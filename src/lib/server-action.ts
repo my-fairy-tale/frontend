@@ -64,7 +64,10 @@ export async function signUpAction(
     }
   } catch (err) {
     // ApiFetchError 또는 다른 에러 처리
-    return err || '서버와 통신 중 오류가 발생했습니다.';
+    if (err instanceof Error) {
+      return err.message;
+    }
+    return '서버와 통신 중 오류가 발생했습니다.';
   }
 
   // 성공 시 로그인 페이지로 리다이렉트
