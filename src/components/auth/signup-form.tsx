@@ -1,9 +1,9 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { signUpAction } from '@/lib/server-action';
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
+import { signUpAction } from '@/lib/server-action';
 
 function SignUpButton() {
   const { pending } = useFormStatus();
@@ -32,7 +32,10 @@ export default function SignUpForm() {
     } else if (numbers.length <= 7) {
       return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
     } else {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
+        7,
+        11
+      )}`;
     }
   };
 

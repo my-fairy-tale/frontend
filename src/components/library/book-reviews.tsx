@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FaStar, FaRegStar } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
 import {
@@ -13,6 +13,7 @@ import { useInView } from 'react-intersection-observer';
 import { ReviewData } from '@/types/api';
 import useUserStore from '@/store/use-user-store';
 import { useSearchParams } from 'next/navigation';
+import ApiFetch, { ApiFetchError } from '@/lib/api';
 
 interface BookReviewsProps {
   slug: string;
@@ -55,32 +56,32 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       isAnonymous: boolean;
     }) => {
       const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}/reviews`;
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-        body: JSON.stringify({
-          rating,
-          comment,
-          isAnonymous,
-        }),
-      });
 
-      if (!response.ok) {
-        if (response.status === 400) {
+      try {
+        const data = await ApiFetch<{ code: string; message?: string }>(
+          backendUrl,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              rating,
+              comment,
+              isAnonymous,
+            }),
+          },
+          session?.accessToken
+        );
+
+        if (data.code !== 'REVIEW_2001') {
+          throw new Error(data?.message || '리뷰 등록에 실패했습니다.');
+        }
+
+        return data;
+      } catch (error) {
+        if (error instanceof ApiFetchError && error.status === 400) {
           throw new Error('나의 글에는 리뷰를 작성할 수 없습니다.');
         }
-        throw new Error('리뷰 등록에 실패했습니다.');
+        throw error;
       }
-
-      const data = await response.json();
-      if (data.code !== 'REVIEW_2001') {
-        throw new Error(data?.message || '리뷰 등록에 실패했습니다.');
-      }
-
-      return data;
     },
     onSuccess: () => {
       alert('리뷰가 성공적으로 등록되었습니다!');
@@ -121,24 +122,18 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       isAnonymous: boolean;
     }) => {
       const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${slug}/reviews`;
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
+      return await ApiFetch(
+        backendUrl,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            rating,
+            comment,
+            isAnonymous,
+          }),
         },
-        body: JSON.stringify({
-          rating,
-          comment,
-          isAnonymous,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('리뷰 수정에 실패했습니다.');
-      }
-
-      return response.json();
+        session?.accessToken
+      );
     },
     onSuccess: () => {
       alert('리뷰가 성공적으로 수정되었습니다!');
@@ -164,7 +159,8 @@ export default function BookReviews({ slug }: BookReviewsProps) {
   });
 
   const { ref, inView } = useInView({
-    threshold: 0.5,
+    threshold: 0.1,
+    rootMargin: '100px',
   });
 
   useEffect(() => {
@@ -173,7 +169,7 @@ export default function BookReviews({ slug }: BookReviewsProps) {
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
     if (!session) {
@@ -186,9 +182,9 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       comment: newComment,
       isAnonymous: false,
     });
-  };
+  }, [session, submitReview, newRating, newComment]);
 
-  const handleEditReview = (e: React.FormEvent) => {
+  const handleEditReview = useCallback((e: React.FormEvent) => {
     e.preventDefault();
 
     if (!session) {
@@ -201,19 +197,19 @@ export default function BookReviews({ slug }: BookReviewsProps) {
       comment: editComment,
       isAnonymous: false,
     });
-  };
+  }, [session, updateReview, editRating, editComment]);
 
-  const startEditing = (review: ReviewData) => {
+  const startEditing = useCallback((review: ReviewData) => {
     setIsEditing(true);
     setEditRating(review.rating);
     setEditComment(review.comment);
-  };
+  }, []);
 
-  const cancelEditing = () => {
+  const cancelEditing = useCallback(() => {
     setIsEditing(false);
     setEditComment('');
     setEditRating(5);
-  };
+  }, []);
 
   if (isLoading) return <p>리뷰 목록을 불러오는 중...</p>;
   if (isError) return <p>오류가 발생했습니다: {error.message}</p>;

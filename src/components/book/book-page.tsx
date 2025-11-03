@@ -1,5 +1,6 @@
 import { BookPage as BookPageData } from '@/types/api';
 import Image from 'next/image';
+import { memo, useCallback } from 'react';
 
 interface BookPageProps {
   pageData: BookPageData | null;
@@ -7,11 +8,14 @@ interface BookPageProps {
   onPlayAudio: (audioUrl: string) => void;
 }
 
-export default function BookPage({
-  pageData,
-  position,
-  onPlayAudio,
-}: BookPageProps) {
+function BookPage({ pageData, position, onPlayAudio }: BookPageProps) {
+  const handlePageClick = useCallback(() => {
+    // pageData가 있고 audioUrl이 있을 때만 부모의 함수를 호출
+    if (pageData?.audioUrl) {
+      onPlayAudio(pageData.audioUrl);
+    }
+  }, [pageData, onPlayAudio]);
+
   if (!pageData) {
     // 오른쪽 페이지가 없을 때 보여줄 UI
     return (
@@ -20,13 +24,6 @@ export default function BookPage({
       </div>
     );
   }
-
-  const handlePageClick = () => {
-    // pageData가 있고 audioUrl이 있을 때만 부모의 함수를 호출
-    if (pageData.audioUrl) {
-      onPlayAudio(pageData.audioUrl);
-    }
-  };
 
   return (
     <div
@@ -60,3 +57,5 @@ export default function BookPage({
     </div>
   );
 }
+
+export default memo(BookPage);

@@ -1,7 +1,7 @@
 'use client';
 
 import { ApiResponse, BookStatus, MyBooksData } from '@/types/api';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import BookThumbnail from './book-thumbnail';
 import {
   InfiniteData,
@@ -12,6 +12,7 @@ import {
 import { useInView } from 'react-intersection-observer';
 import { useSession } from 'next-auth/react';
 import { myBookOption } from './my-book-option';
+import ApiFetch from '@/lib/api';
 
 const MyBookList = () => {
   const queryClient = useQueryClient();
@@ -38,7 +39,8 @@ const MyBookList = () => {
   });
 
   const { ref, inView } = useInView({
-    threshold: 0.5, // 요소가 50% 보이면 콜백 실행
+    threshold: 0.1,
+    rootMargin: '100px',
   });
 
   useEffect(() => {
@@ -58,43 +60,24 @@ const MyBookList = () => {
     session?.accessToken,
   ]);
 
-  const handleStatusChange = async (
-    bookId: string,
-    newStatus: 'PUBLIC' | 'PRIVATE'
-  ) => {
-    updateBookVisibility({ bookId, newStatus });
-  };
-
   const { mutate: deleteBook } = useMutation({
     mutationFn: async ({ bookId }: { bookId: string }) => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to delete book');
-        }
-
-        const data: ApiResponse<null> = await response.json();
-        if (data.code !== 'BOOK_2005') {
-          throw new Error(data.message || '책 삭제에 실패했습니다.');
-        }
-        return bookId;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
       }
+
+      const data: ApiResponse<null> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}`,
+        {
+          method: 'DELETE',
+        },
+        session.accessToken
+      );
+
+      if (data.code !== 'BOOK_2005') {
+        throw new Error(data.message || '책 삭제에 실패했습니다.');
+      }
+      return bookId;
     },
     onSuccess: (bookId) => {
       // Remove the deleted book from the cache
@@ -130,35 +113,23 @@ const MyBookList = () => {
       bookId: string;
       newStatus: 'PUBLIC' | 'PRIVATE';
     }) => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('인증 정보가 없습니다.');
-        }
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}/visibility`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-            body: JSON.stringify({ visibility: newStatus }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch my books');
-        }
-
-        const data: ApiResponse<null> = await response.json();
-        if (data.code !== 'BOOK_2006') {
-          throw new Error('not my books');
-        }
-        return data.data;
-      } catch (err) {
-        console.log('api call failed in parent', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('인증 정보가 없습니다.');
       }
+
+      const data: ApiResponse<null> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/${bookId}/visibility`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ visibility: newStatus }),
+        },
+        session.accessToken
+      );
+
+      if (data.code !== 'BOOK_2006') {
+        throw new Error('not my books');
+      }
+      return data.data;
     },
 
     onSuccess: (data, variables) => {
@@ -186,6 +157,13 @@ const MyBookList = () => {
       alert('상태 변경에 실패했습니다. 다시 시도해주세요.');
     },
   });
+
+  const handleStatusChange = useCallback(
+    async (bookId: string, newStatus: 'PUBLIC' | 'PRIVATE') => {
+      updateBookVisibility({ bookId, newStatus });
+    },
+    [updateBookVisibility]
+  );
 
   if (isLoading) return <p>책 목록을 불러오는 중...</p>;
   if (isError) return <p>오류가 발생했습니다: {error.message}</p>;

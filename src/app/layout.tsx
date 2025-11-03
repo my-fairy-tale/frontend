@@ -18,6 +18,10 @@ const pretendard = localFont({
   src: './fonts/PretendardVariable.ttf',
   display: 'swap',
   weight: '45 920',
+  variable: '--font-pretendard',
+  preload: true,
+  fallback: ['system-ui', '-apple-system', 'Segoe UI', 'Apple SD Gothic Neo', 'sans-serif'],
+  adjustFontFallback: 'Arial',
 });
 
 export default async function RootLayout({
@@ -28,8 +32,8 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="en">
-      <body className="flex flex-col items-center min-h-screen antialiased pt-16 pb-16">
+    <html lang="ko">
+      <body className={`${pretendard.className} flex flex-col items-center min-h-screen antialiased pt-16 pb-16`}>
         <AuthProvider session={session}>
           <ReactQueryProvider>
             <Header />

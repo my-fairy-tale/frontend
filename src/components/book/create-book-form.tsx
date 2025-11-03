@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ApiResponse,
@@ -17,6 +17,7 @@ import Notification from '@/components/ui/notification';
 import { useSession } from 'next-auth/react';
 import useUserStore from '@/store/use-user-store';
 import { VOICE_MODELS } from '@/lib/voice-models';
+import ApiFetch from '@/lib/api';
 
 export default function CreateBookForm() {
   const { data: session } = useSession();
@@ -33,14 +34,14 @@ export default function CreateBookForm() {
   const [notification, setNotification] = useState({ message: '', type: '' });
   const router = useRouter();
 
-  const handleChange = (
+  const handleChange = useCallback((
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
     setNotification({ message: '', type: '' }); // 이전 알림 초기화
@@ -61,20 +62,14 @@ export default function CreateBookForm() {
       }
 
       const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/generate`;
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
+      const data = await ApiFetch<ApiResponse<CreateBookData>>(
+        backendUrl,
+        {
+          method: 'POST',
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        throw new Error('책 생성에 실패하였습니다.');
-      }
-
-      const data: ApiResponse<CreateBookData> = await response.json();
+        session.accessToken
+      );
 
       if (data?.code === 'BOOK_2001' && data.data) {
         setNotification({
@@ -94,7 +89,7 @@ export default function CreateBookForm() {
     } finally {
       setIsLoading(false); // 성공/실패 여부와 관계없이 로딩 상태 해제
     }
-  };
+  }, [formData, targetAge, theme, style, voiceModel, ttsSpeed, session?.accessToken, router]);
 
   return (
     <form onSubmit={handleSubmit}>

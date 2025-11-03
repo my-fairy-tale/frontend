@@ -3,15 +3,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FaUserCircle } from 'react-icons/fa';
 import { MdEdit, MdCheck, MdClose } from 'react-icons/md';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { userProfileOption } from './user-profile-option';
 import useUserStore from '@/store/use-user-store';
 import { useSession } from 'next-auth/react';
-import { UserProfileData } from '@/types/api';
+import { ApiResponse, UserProfileData } from '@/types/api';
 import ChoosePreferenceVoice from './choose-preference-voice';
 import useModalStore from '@/store/use-modal-store';
 import PhoneNumberModal from '../ui/modal/phone-number-modal';
 import { formatPhoneNumber, validatePhoneNumber } from '@/lib/phone-utils';
+import ApiFetch from '@/lib/api';
 
 const UserProfile = () => {
   const { data: session } = useSession();
@@ -40,21 +41,15 @@ const UserProfile = () => {
         throw new Error('인증 정보가 없습니다.');
       }
 
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/me`;
-      const response = await fetch(backendUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
+      const data: ApiResponse<UserProfileData> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/me`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({ name, phoneNumber }),
         },
-        body: JSON.stringify({ name, phoneNumber }),
-      });
+        session.accessToken
+      );
 
-      if (!response.ok) {
-        throw new Error('프로필 업데이트에 실패했습니다.');
-      }
-
-      const data = await response.json();
       return data.data;
     },
     onMutate: async ({ name, phoneNumber }) => {
@@ -106,23 +101,22 @@ const UserProfile = () => {
     }
   }, [closeModal, openModal, user?.phoneNumber]);
 
-  if (isLoading) return <p>사용자 정보를 불러오는 중입니다...</p>;
-  if (isError)
-    return <p>사용자 정보를 불러오는데 실패했습니다: {String(error)}</p>;
-  if (!user) return <p>사용자 정보를 찾을 수 없습니다.</p>;
+  const handlePhoneChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const formatted = formatPhoneNumber(e.target.value);
+      setNewPhoneNumber(formatted);
+    },
+    []
+  );
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setNewPhoneNumber(formatted);
-  };
-
-  const handleEditClick = () => {
+  const handleEditClick = useCallback(() => {
+    if (!user) return;
     setNewName(user.name);
     setNewPhoneNumber(user.phoneNumber || '');
     setIsEditing(true);
-  };
+  }, [user]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     // Validate name
     if (!newName.trim()) {
       alert('이름을 입력해주세요.');
@@ -141,13 +135,18 @@ const UserProfile = () => {
     }
 
     updateProfile({ name: newName.trim(), phoneNumber: newPhoneNumber.trim() });
-  };
+  }, [newName, newPhoneNumber, updateProfile]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsEditing(false);
     setNewName('');
     setNewPhoneNumber('');
-  };
+  }, []);
+
+  if (isLoading) return <p>사용자 정보를 불러오는 중입니다...</p>;
+  if (isError)
+    return <p>사용자 정보를 불러오는데 실패했습니다: {String(error)}</p>;
+  if (!user) return <p>사용자 정보를 찾을 수 없습니다.</p>;
 
   const displayName = storedUser?.name || user.name;
 

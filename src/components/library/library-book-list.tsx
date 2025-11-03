@@ -9,7 +9,10 @@ import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 
 const LibraryBookList = () => {
-  const { ref, inView } = useInView({ threshold: 0.5 });
+  const { ref, inView } = useInView({
+    threshold: 0.1,
+    rootMargin: '100px',
+  });
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const currentSort = searchParams.get('sort') || 'latest';

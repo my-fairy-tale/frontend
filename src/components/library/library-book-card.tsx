@@ -17,6 +17,8 @@ import { libraryDetailReviewOption } from './library-detail-review-option';
 import { InfiniteData, useMutation } from '@tanstack/react-query';
 import { libraryBookOption } from './library-book-option';
 import { useSearchParams } from 'next/navigation';
+import ApiFetch from '@/lib/api';
+import { memo, useCallback } from 'react';
 
 interface LibraryBookCardProps {
   post: LibraryBooksData;
@@ -30,34 +32,22 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
 
   const { mutate: toggleLike } = useMutation({
     mutationFn: async () => {
-      try {
-        if (!session?.accessToken) {
-          throw new Error('로그인이 필요합니다.');
-        }
-
-        const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${post.postId}/likes`;
-        const response = await fetch(backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('좋아요 요청에 실패했습니다.');
-        }
-
-        const data: ApiResponse<LikeData> = await response.json();
-        if (!data.data) {
-          throw new Error('좋아요 데이터가 없습니다.');
-        }
-
-        return data.data;
-      } catch (err) {
-        console.error('toggle like failed', err);
-        throw err;
+      if (!session?.accessToken) {
+        throw new Error('로그인이 필요합니다.');
       }
+
+      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${post.postId}/likes`;
+      const data = await ApiFetch<ApiResponse<LikeData>>(
+        backendUrl,
+        { method: 'POST' },
+        session.accessToken
+      );
+
+      if (!data.data) {
+        throw new Error('좋아요 데이터가 없습니다.');
+      }
+
+      return data.data;
     },
     onMutate: async () => {
       await queryClient.cancelQueries({
@@ -114,19 +104,22 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
     },
   });
 
-  const handleLikeClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleLikeClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    if (!session?.accessToken) {
-      alert('로그인이 필요합니다.');
-      return;
-    }
+      if (!session?.accessToken) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
 
-    toggleLike();
-  };
+      toggleLike();
+    },
+    [session?.accessToken, toggleLike]
+  );
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     if (session?.accessToken) {
       queryClient.prefetchQuery(
         libraryDetailLikeOption(post.postId.toString(), session.accessToken)
@@ -136,7 +129,7 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
       libraryDetailReviewOption(post.postId.toString())
     );
     queryClient.prefetchQuery(libraryDetailBookOption(post.postId.toString()));
-  };
+  }, [session?.accessToken, post.postId, queryClient]);
 
   return (
     <Link
@@ -192,4 +185,4 @@ const LibraryBookCard = ({ post }: LibraryBookCardProps) => {
   );
 };
 
-export default LibraryBookCard;
+export default memo(LibraryBookCard);

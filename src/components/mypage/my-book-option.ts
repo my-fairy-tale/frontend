@@ -1,26 +1,20 @@
 import { ApiResponse, MyBooksData } from '@/types/api';
 import { infiniteQueryOptions } from '@tanstack/react-query';
+import ApiFetch from '@/lib/api';
 
 export const myBookOption = (accessToken?: string, sort: string = 'latest') =>
   infiniteQueryOptions({
     queryKey: ['myBooksInfinite', sort],
     queryFn: async ({ pageParam = 0 }) => {
-      const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/my?page=${pageParam}&size=4&sort=${sort}`;
-
-      const response = await fetch(backendUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      const data: ApiResponse<MyBooksData> = await ApiFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/books/my?page=${pageParam}&size=4&sort=${sort}`,
+        {
+          method: 'GET',
+          ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
         },
-        ...(typeof window === 'undefined' ? { cache: 'no-store' } : {}),
-      });
+        accessToken
+      );
 
-      if (!response.ok) {
-        throw new Error('책 데이터를 불러올 수 없습니다.');
-      }
-
-      const data: ApiResponse<MyBooksData> = await response.json();
       if (!data.data) {
         throw new Error('책 데이터가 없습니다.');
       }

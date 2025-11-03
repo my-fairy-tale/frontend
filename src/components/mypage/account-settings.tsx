@@ -1,9 +1,11 @@
 'use client';
 
+import { useCallback } from 'react';
 import { signOut } from 'next-auth/react';
 import useModalStore from '@/store/use-modal-store';
 import useUserStore from '@/store/use-user-store';
 import UserWithdrawModal from '@/components/ui/modal/user-withdraw-modal';
+import ApiFetch from '@/lib/api';
 
 interface AccountSettingsProps {
   accessToken?: string;
@@ -13,36 +15,19 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
   const { openModal, closeModal } = useModalStore();
   const { clearUser } = useUserStore();
 
-  const handleWithdrawClick = () => {
-    openModal(
-      <UserWithdrawModal
-        onConfirm={handleWithdrawConfirm}
-        onCancel={closeModal}
-      />,
-      { size: 'lg' }
-    );
-  };
-
-  const handleWithdrawConfirm = async () => {
+  const handleWithdrawConfirm = useCallback(async () => {
     try {
       if (!accessToken) {
         throw new Error('인증 정보가 없습니다.');
       }
 
-      const response = await fetch(
+      await ApiFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/me`,
         {
           method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        },
+        accessToken
       );
-
-      if (!response.ok) {
-        throw new Error('회원 탈퇴에 실패했습니다.');
-      }
 
       closeModal();
       alert('회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다.');
@@ -57,7 +42,17 @@ const AccountSettings = ({ accessToken }: AccountSettingsProps) => {
       alert('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
       throw error;
     }
-  };
+  }, [accessToken, closeModal, clearUser]);
+
+  const handleWithdrawClick = useCallback(() => {
+    openModal(
+      <UserWithdrawModal
+        onConfirm={handleWithdrawConfirm}
+        onCancel={closeModal}
+      />,
+      { size: 'lg' }
+    );
+  }, [openModal, closeModal, handleWithdrawConfirm]);
 
   return (
     <section>
