@@ -15,12 +15,18 @@ export const metadata: Metadata = {
 };
 
 const pretendard = localFont({
-  src: './fonts/PretendardVariable.ttf',
+  src: './fonts/PretendardVariable.woff2',
   display: 'swap',
   weight: '45 920',
   variable: '--font-pretendard',
   preload: true,
-  fallback: ['system-ui', '-apple-system', 'Segoe UI', 'Apple SD Gothic Neo', 'sans-serif'],
+  fallback: [
+    'system-ui',
+    '-apple-system',
+    'Segoe UI',
+    'Apple SD Gothic Neo',
+    'sans-serif',
+  ],
   adjustFontFallback: 'Arial',
 });
 
@@ -33,7 +39,9 @@ export default async function RootLayout({
 
   return (
     <html lang="ko">
-      <body className={`${pretendard.className} flex flex-col items-center min-h-screen antialiased pt-16 pb-16`}>
+      <body
+        className={`${pretendard.className} flex flex-col items-center min-h-screen antialiased pt-16 pb-16`}
+      >
         <AuthProvider session={session}>
           <ReactQueryProvider>
             <Header />
